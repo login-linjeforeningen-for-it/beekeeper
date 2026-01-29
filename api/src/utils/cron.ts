@@ -1,9 +1,9 @@
 import checkMaxConnectionsCron from './maxConnections.ts'
-import heartbeat from './status/heartbeat.ts'
+import monitor from './status/monitor.ts'
 
 export default function cron() {
     checkMaxConnectionsCron()
     setInterval(async() => {
-        heartbeat()
+        monitor()
     }, 60000)
 }
