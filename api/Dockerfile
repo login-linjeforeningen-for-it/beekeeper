@@ -5,12 +5,12 @@ FROM node:alpine
 RUN apk add --no-cache python3 make g++ curl postgresql-client 
 
 # Install kubectl
-RUN curl -LO https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl && \
+RUN curl -LO https://dl.k8s.io/release/v1.35.3/bin/linux/amd64/kubectl && \
   chmod +x kubectl && \
   mv kubectl /usr/local/bin/
 
 # Install doctl
-RUN curl -sSL https://github.com/digitalocean/doctl/releases/download/v1.90.0/doctl-1.90.0-linux-amd64.tar.gz | \
+RUN curl -sSL https://github.com/digitalocean/doctl/releases/download/v1.151.0/doctl-1.151.0-linux-amd64.tar.gz | \
   tar -xzv && \
   mv doctl /usr/local/bin/
 
