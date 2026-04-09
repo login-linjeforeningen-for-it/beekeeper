@@ -223,6 +223,68 @@ type Certificate = {
     }
 }
 
+type GPT_ModelStatus = 'idle' | 'preparing' | 'generating' | 'error'
+
+type GPT_ModelMetrics = {
+    conversationId: string | null
+    status: GPT_ModelStatus
+    currentTokens: number
+    maxTokens: number
+    promptTokens: number
+    generatedTokens: number
+    contextTokens: number
+    contextMaxTokens: number
+    tps: number
+    lastUpdated: string | null
+    lastError: string | null
+}
+
+type GPT_Client = {
+    name: string
+    ram: GPT_RAM[]
+    cpu: GPT_CPU[]
+    gpu: GPT_GPU[]
+    model: GPT_ModelMetrics
+}
+
+type GPT_RAM = {
+    name: string
+    load: number
+}
+
+type GPT_CPU = {
+    name: string
+    load: number
+}
+
+type GPT_GPU = {
+    name: string
+    load: number
+}
+
+type GPT_ChatRole = 'system' | 'user' | 'assistant'
+
+type GPT_ChatMessage = {
+    role: GPT_ChatRole
+    content: string
+}
+
+type GPT_PromptRequest = {
+    type: 'prompt_request'
+    conversationId: string
+    clientName?: string
+    messages: GPT_ChatMessage[]
+    maxTokens?: number
+    temperature?: number
+}
+
+type GPT_PromptEventType = 'prompt_started' | 'prompt_delta' | 'prompt_complete' | 'prompt_error'
+
+type GPT_SocketState = {
+    clientName: string | null
+    role: 'producer' | 'observer'
+}
+
 type InvalidCertificate = {
     valid: false
     message: string

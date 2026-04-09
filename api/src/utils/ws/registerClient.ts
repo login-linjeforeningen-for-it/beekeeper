@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws'
-import { beeswarm } from './handleMessage.ts'
+import { beeswarm, beeswarmSockets } from './handleMessage.ts'
 import { WebSocket as WS } from 'ws'
 
 export function registerClient(id: string, socket: WebSocket) {
@@ -8,6 +8,10 @@ export function registerClient(id: string, socket: WebSocket) {
     }
 
     beeswarm.get(id)!.add(socket)
+    beeswarmSockets.set(socket, {
+        role: 'observer',
+        clientName: null,
+    })
     broadcastJoin(id)
 }
 
