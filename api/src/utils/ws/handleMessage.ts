@@ -4,6 +4,32 @@ import { WebSocket as WS } from 'ws'
 export const beeswarm = new Map<string, Set<WS>>()
 export const beeswarmSockets = new Map<WS, GPT_SocketState>()
 
+function defaultModelMetrics(): GPT_ModelMetrics {
+    return {
+        conversationId: null,
+        status: 'idle',
+        currentTokens: 0,
+        maxTokens: 0,
+        promptTokens: 0,
+        generatedTokens: 0,
+        contextTokens: 0,
+        contextMaxTokens: 0,
+        tps: 0,
+        lastUpdated: null,
+        lastError: null,
+    }
+}
+
+function normalizeClient(client: GPT_Client): GPT_Client {
+    return {
+        ...client,
+        model: {
+            ...defaultModelMetrics(),
+            ...(client.model || {}),
+        },
+    }
+}
+
 export async function handleMessage(
     id: string,
     socket: WS,
@@ -18,11 +44,13 @@ export async function handleMessage(
                     return
                 }
 
+                const normalizedClient = normalizeClient(msg.client)
+
                 beeswarmSockets.set(socket, {
                     role: 'producer',
-                    clientName: msg.client.name,
+                    clientName: normalizedClient.name,
                 })
-                broadcastUpdate(id, socket, msg.client)
+                broadcastUpdate(id, socket, normalizedClient)
                 return
 
             case 'prompt_request':
