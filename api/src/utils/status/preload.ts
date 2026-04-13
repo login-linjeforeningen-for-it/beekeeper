@@ -76,15 +76,15 @@ async function fetchServiceUptimeLastMonth(): Promise<Map<string, {
     }>()
 
     for (const row of monthlyResult.rows ?? []) {
-        const name = String(row.serviceName)
+        const name = normalizeServiceName(String(row.service_name))
         byService.set(name, {
-            uptimeLastMonth: Number.isFinite(Number(row.uptimeLastMonth)) ? Number(row.uptimeLastMonth) : 0,
+            uptimeLastMonth: Number.isFinite(Number(row.uptime_last_month)) ? Number(row.uptime_last_month) : 0,
             dailyStatusLastMonth: []
         })
     }
 
     for (const row of dailyResult.rows ?? []) {
-        const name = String(row.serviceName)
+        const name = normalizeServiceName(String(row.service_name))
         const daily = {
             date: String(row.date),
             uptime: Number.isFinite(Number(row.uptime)) ? Number(row.uptime) : 0,
@@ -110,7 +110,7 @@ function enrichServicesWithUptime(
     uptimeByService: Map<string, { uptimeLastMonth: number, dailyStatusLastMonth: StatusDaily[] }>
 ) {
     return services.map((service) => {
-        const uptime = uptimeByService.get(service.name)
+        const uptime = uptimeByService.get(normalizeServiceName(service.name))
 
         return {
             ...service,
@@ -118,4 +118,13 @@ function enrichServicesWithUptime(
             dailyStatusLastMonth: uptime?.dailyStatusLastMonth ?? [],
         }
     })
+}
+
+function normalizeServiceName(name: string): string {
+    return name
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean)
+        .sort()
+        .join('-')
 }

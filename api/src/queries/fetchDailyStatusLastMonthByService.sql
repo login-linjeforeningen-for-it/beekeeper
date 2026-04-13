@@ -2,7 +2,7 @@ WITH days AS (
     SELECT generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, INTERVAL '1 day')::date AS day
 )
 SELECT
-    s.name AS "serviceName",
+    s.name AS service_name,
     TO_CHAR(days.day, 'YYYY-MM-DD') AS date,
     CASE
         WHEN COUNT(sd.id) = 0 THEN 0
