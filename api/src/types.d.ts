@@ -44,6 +44,20 @@ type Domain = {
     namespace: string
 }
 
+type StatusDaily = {
+    date: string
+    uptime: number
+    status: ServiceStatusHuman
+}
+
+type StatusService = {
+    name: string
+    status: ServiceStatusHuman
+    issues?: string[]
+    uptimeLastMonth: number
+    dailyStatusLastMonth: StatusDaily[]
+}
+
 type StatusCache = {
     age: number
     data: {
@@ -52,7 +66,7 @@ type StatusCache = {
                 number: number
                 message: string
             },
-            services: Service[]
+            services: StatusService[]
             meta: string
         },
         dev: {
@@ -60,7 +74,7 @@ type StatusCache = {
                 number: number
                 message: string
             },
-            services: Service[]
+            services: StatusService[]
             meta: string
         }
     } | null
@@ -74,7 +88,7 @@ type StatusStarting = {
             message: string
             info: string
         },
-        services: { name: string, status: ServiceStatusHuman }[]
+        services: StatusService[]
         meta: ServiceStatusHuman
     }
     dev: {
@@ -83,7 +97,7 @@ type StatusStarting = {
             message: string
             info: string
         }
-        services: { name: string, status: ServiceStatusHuman }[]
+        services: StatusService[]
         meta: ServiceStatusHuman
     }
 }
@@ -95,7 +109,7 @@ type StatusDegraded = {
             message: string
             error: string
         },
-        services: never[]
+        services: StatusService[]
         meta: ServiceStatusHuman
     }
     dev: {
@@ -104,7 +118,7 @@ type StatusDegraded = {
             message: string
             error: string
         }
-        services: never[]
+        services: StatusService[]
         meta: ServiceStatusHuman
     }
 }
@@ -115,7 +129,7 @@ type StatusOperational = {
             number: number
             message: ServiceStatusHuman
         },
-        services: { name: string, status: ServiceStatusHuman }[]
+        services: StatusService[]
         meta: ServiceStatusHuman
     }
     dev: {
@@ -123,7 +137,7 @@ type StatusOperational = {
             number: number
             message: ServiceStatusHuman
         },
-        services: { name: string, status: ServiceStatusHuman }[]
+        services: StatusService[]
         meta: string
     }
 }
