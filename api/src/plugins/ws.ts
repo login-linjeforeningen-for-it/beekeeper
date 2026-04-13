@@ -4,6 +4,7 @@ import type { WebSocket } from 'ws'
 import { registerClient } from '#utils/ws/registerClient.ts'
 import { handleMessage } from '#utils/ws/handleMessage.ts'
 import { removeClient } from '#utils/ws/removeClient.ts'
+import { beeswarm } from '#utils/ws/handleMessage.ts'
 
 export default fp(async function wsPlugin(fastify: FastifyInstance) {
     fastify.register(async function (fastify) {
@@ -11,13 +12,13 @@ export default fp(async function wsPlugin(fastify: FastifyInstance) {
             const id = (req.params as { id: string}).id
 
             registerClient(id, connection)
-            fastify.clients++
+            fastify.clients = beeswarm.size
             connection.on('message', (message) => {
                 handleMessage(id, connection, message)
             })
 
             connection.on('close', () => {
-                fastify.clients--
+                fastify.clients = beeswarm.size
                 removeClient(id, connection)
             })
         })
