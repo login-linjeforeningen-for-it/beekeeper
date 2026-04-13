@@ -64,6 +64,10 @@ export async function handleMessage(
                 broadcastPromptEvent(id, socket, msg)
                 return
 
+            case 'history_request':
+                relayHistoryRequest(id, msg as { clientName: string, conversationId: string })
+                return
+
             default:
                 return
         }
@@ -142,5 +146,21 @@ function broadcastPromptEvent(id: string, sender: WS, event: { type?: string }) 
         if (clientSocket !== sender && clientSocket.readyState === WS.OPEN) {
             clientSocket.send(payload)
         }
+    }
+}
+
+function relayHistoryRequest(id: string, request: { clientName: string, conversationId: string }) {
+    const clients = beeswarm.get(id)
+    if (!clients) {
+        return
+    }
+
+    const target = [...clients].find((client) => {
+        const state = beeswarmSockets.get(client)
+        return state?.role === 'producer' && state.clientName === request.clientName
+    })
+
+    if (target && target.readyState === WS.OPEN) {
+        target.send(JSON.stringify({ type: 'get_session_history', ...request }))
     }
 }
