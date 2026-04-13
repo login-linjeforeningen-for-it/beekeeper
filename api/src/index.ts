@@ -21,6 +21,7 @@ const fastify = Fastify({
 fastify.decorate('status', Buffer.from(JSON.stringify({ ...fallback.degraded })))
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
 fastify.decorate('internalDashboard', Buffer.from(''))
+fastify.decorate('clients', 0)
 
 fastify.register(websocket)
 fastify.register(sse)

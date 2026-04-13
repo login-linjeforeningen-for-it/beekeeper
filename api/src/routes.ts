@@ -78,6 +78,7 @@ import getService from './handlers/monitoring/getService.ts'
 import putService from './handlers/monitoring/putService.ts'
 import putStatusNotification from './handlers/monitoring/notification/putNotification.ts'
 import getInternalDashboard from './handlers/dashboard/internal/get.ts'
+import getClients from './handlers/ai/getClients.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
@@ -192,6 +193,9 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.put('/site/:id', { preHandler }, putSite)
 
     fastify.delete('/site/:id', { preHandler }, deleteSite)
+
+    // ai
+    fastify.get('/clients', getClients)
 
     // internal dashboard
     fastify.get('/dashboard/internal', getInternalDashboard)

@@ -7,5 +7,6 @@ declare module 'fastify' {
         status: Buffer
         favicon: Buffer
         internalDashboard: Buffer
+        clients: number
     }
 }

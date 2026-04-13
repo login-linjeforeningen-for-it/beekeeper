@@ -11,11 +11,13 @@ export default fp(async function wsPlugin(fastify: FastifyInstance) {
             const id = (req.params as { id: string}).id
 
             registerClient(id, connection)
+            fastify.clients++
             connection.on('message', (message) => {
                 handleMessage(id, connection, message)
             })
 
             connection.on('close', () => {
+                fastify.clients--
                 removeClient(id, connection)
             })
         })

@@ -1,5 +1,5 @@
-# Latest Alpine Image
-FROM node:alpine
+# Latest Bun Alpine Image
+FROM oven/bun:alpine AS builder
 
 # Installs dependencies
 RUN apk add --no-cache python3 make g++ curl postgresql-client 
@@ -17,11 +17,9 @@ RUN curl -sSL https://github.com/digitalocean/doctl/releases/download/v1.151.0/d
 # Sets working directory
 WORKDIR /api
 
-# Copies package.json and package-lock.json
-COPY package*.json ./
-
 # Installs dependencies
-RUN npm install
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 # Copies the rest of the API source code
 COPY . .

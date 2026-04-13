@@ -1,11 +1,11 @@
 {
   "name": "beekeeper",
-  "version": "1.5.15",
+  "version": "2.0.0",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "node src/index.ts",
-    "trace": "node --trace-gc src/index.ts",
+    "start": "bun src/index.ts",
+    "trace": "bun --trace-gc src/index.ts",
     "lint": "eslint --fix ./src"
   },
   "keywords": [],
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "@types/ws": "^8.18.1",
     "eslint": "^10.2.0",
