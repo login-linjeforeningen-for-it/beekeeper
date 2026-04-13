@@ -12,7 +12,7 @@ export default fp(async function wsPlugin(fastify: FastifyInstance) {
             const id = (req.params as { id: string}).id
 
             registerClient(id, connection)
-            fastify.clients = beeswarm.size
+            fastify.clients = beeswarm.get(id)!.size
             connection.on('message', (message) => {
                 handleMessage(id, connection, message)
             })
