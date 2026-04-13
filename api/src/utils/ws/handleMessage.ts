@@ -161,6 +161,6 @@ function relayHistoryRequest(id: string, request: { clientName: string, conversa
     })
 
     if (target && target.readyState === WS.OPEN) {
-        target.send(JSON.stringify({ type: 'get_session_history', ...request }))
+        target.send(JSON.stringify({ type: 'history_provided', ...request }))
     }
 }
