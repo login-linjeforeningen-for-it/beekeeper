@@ -65,11 +65,21 @@ export async function handleMessage(
                 return
 
             case 'history_request':
-                relayHistoryRequest(id, msg as { clientName: string, conversationId: string })
+                relayHistoryRequest(
+                    id,
+                    socket,
+                    msg as {
+                        clientName: string
+                        conversationId: string
+                    }
+                )
                 return
 
-            default:
+            case 'history_provided':
+                broadcastPromptEvent(id, socket, msg)
                 return
+
+            default: return
         }
     } catch (err) {
         console.error('Invalid WebSocket message:', err)
@@ -149,7 +159,11 @@ function broadcastPromptEvent(id: string, sender: WS, event: { type?: string }) 
     }
 }
 
-function relayHistoryRequest(id: string, request: { clientName: string, conversationId: string }) {
+function relayHistoryRequest(
+    id: string,
+    requester: WS,
+    request: { clientName: string; conversationId: string }
+) {
     const clients = beeswarm.get(id)
     if (!clients) {
         return
@@ -160,7 +174,20 @@ function relayHistoryRequest(id: string, request: { clientName: string, conversa
         return state?.role === 'producer' && state.clientName === request.clientName
     })
 
-    if (target && target.readyState === WS.OPEN) {
-        target.send(JSON.stringify({ type: 'history_provided', ...request }))
+    if (!target || target.readyState !== WS.OPEN) {
+        requester.send(JSON.stringify({
+            type: 'prompt_error',
+            conversationId: request.conversationId,
+            clientName: request.clientName,
+            error: `Client ${request.clientName} is not connected.`,
+            timestamp: new Date().toISOString(),
+        }))
+        return
     }
+
+    target.send(JSON.stringify({
+        type: 'history_request',
+        conversationId: request.conversationId,
+        clientName: request.clientName,
+    }))
 }
