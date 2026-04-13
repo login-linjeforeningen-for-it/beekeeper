@@ -7,20 +7,19 @@ import { removeClient } from '#utils/ws/removeClient.ts'
 import { beeswarm } from '#utils/ws/handleMessage.ts'
 
 export default fp(async function wsPlugin(fastify: FastifyInstance) {
-    fastify.register(async function (fastify) {
-        fastify.get<{ Params: { id: string } }>('/api/client/ws/:id', { websocket: true }, (connection: WebSocket, req: FastifyRequest<{ Params: { id: string } }>) => {
-            const id = (req.params as { id: string}).id
+    fastify.get<{ Params: { id: string } }>('/api/client/ws/:id', { websocket: true }, (connection: WebSocket, req: FastifyRequest<{ Params: { id: string } }>) => {
+        const id = (req.params as { id: string}).id
 
-            registerClient(id, connection)
-            fastify.clients = beeswarm.get(id)!.size
-            connection.on('message', (message) => {
-                handleMessage(id, connection, message)
-            })
+        registerClient(id, connection)
+        fastify.clients = beeswarm.get(id)!.size
 
-            connection.on('close', () => {
-                fastify.clients = beeswarm.size
-                removeClient(id, connection)
-            })
+        connection.on('message', (message) => {
+            handleMessage(id, connection, message)
+        })
+
+        connection.on('close', () => {
+            fastify.clients = beeswarm.size
+            removeClient(id, connection)
         })
     })
 })
