@@ -177,13 +177,30 @@ function relayHistoryRequest(
     if (!clients) {
         return
     }
-    
+
+    let foundProducer = false
+
+    for (const client of clients) {
+        if (client === requester || client.readyState !== WS.OPEN) {
+            continue
+        }
+
+        const state = beeswarmSockets.get(client)
+        if (state?.role !== 'producer') {
+            continue
+        }
+
+        foundProducer = true
+
+
+    }
+
     console.log('2 relayHistory')
     const target = [...clients].find((client) => {
         const state = beeswarmSockets.get(client)
         return state?.role === 'producer' && state.clientName === request.clientName
     })
-    
+
     console.log('3 relayHistory')
     if (!target || target.readyState !== WS.OPEN) {
         console.log('3.1 relayHistory')
@@ -196,7 +213,7 @@ function relayHistoryRequest(
         }))
         return
     }
-    
+
     console.log('4 relayHistory')
     console.log('sending history to', target, JSON.stringify({
         type: 'history_request',
