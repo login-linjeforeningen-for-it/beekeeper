@@ -14,7 +14,7 @@ export default fp(async function wsPlugin(fastify: FastifyInstance) {
         fastify.clients = beeswarm.get(id)!.size
 
         connection.on('message', (message) => {
-            console.log('CONNECTION INTERACTION', connection, message)
+            console.log('CONNECTION INTERACTION')
             handleMessage(id, connection, message)
         })
 
