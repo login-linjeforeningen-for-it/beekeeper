@@ -8,7 +8,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8002:8080"
-    command: sh -c "./scripts/init.sh"
     depends_on:
       - postgres
     env_file:

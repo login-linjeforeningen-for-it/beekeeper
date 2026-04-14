@@ -1,4 +1,3 @@
-import getProdNamespaces from '#utils/getProdNamespaces.ts'
 import getAlerts from './helpers/getAlerts.ts'
 import getBackups from './helpers/getBackups.ts'
 import getMonitored from './helpers/getMonitored.ts'
@@ -11,7 +10,6 @@ export default async function preloadInternalDashboard(): Promise<InternalDashbo
     const alerts = await getAlerts()
     const backups = await getBackups()
     const sites = await getSites()
-    const kubernetes = await getProdNamespaces()
     const monitored = await getMonitored()
     const requestsToday = await getRequestsToday()
     const primarySite = await getPrimarySite()
@@ -22,7 +20,6 @@ export default async function preloadInternalDashboard(): Promise<InternalDashbo
             alerts,
             backups,
             sites,
-            kubernetes,
             monitored,
             requestsToday
         },

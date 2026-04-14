@@ -1,6 +1,4 @@
 const requiredEnvironmentVariables = [
-    'DOCTL_TOKEN',
-    'PRIVATE_TOKEN',
     'DB',
     'DB_HOST',
     'DB_USER',
@@ -47,7 +45,6 @@ const config = {
     DB_TIMEOUT_MS: env.DB_TIMEOUT_MS,
     NEXT_PUBLIC_API_URL: env.NEXT_PUBLIC_API_URL,
     DOCTL_TOKEN: env.DOCTL_TOKEN,
-    PRIVATE_TOKEN: env.PRIVATE_TOKEN,
     DB: env.DB,
     DB_HOST: env.DB_HOST,
     DB_USER: env.DB_USER,

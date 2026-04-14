@@ -335,7 +335,6 @@ type InternalDashboardStatistics = {
     alerts: number
     backups: number
     sites: number
-    kubernetes: number
     monitored: number
     requestsToday: number
 }

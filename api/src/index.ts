@@ -8,7 +8,6 @@ import apiRoutes from './routes.ts'
 import cron from '#utils/cron.ts'
 import fp from './fp.ts'
 import ws from './plugins/ws.ts'
-import { fallback } from '#utils/status/defaults.ts'
 
 import getIndexHandler from './handlers/index/getIndex.ts'
 import getFavicon from './handlers/favicon/getFavicon.ts'
@@ -18,7 +17,6 @@ const fastify = Fastify({
     logger: true
 })
 
-fastify.decorate('status', Buffer.from(JSON.stringify({ ...fallback.degraded })))
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
 fastify.decorate('internalDashboard', Buffer.from(''))
 fastify.decorate('clients', 0)
