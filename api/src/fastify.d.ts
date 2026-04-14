@@ -4,7 +4,7 @@ declare module 'fastify' {
     interface FastifyInstance<RawServer, RawRequest, RawReply, Logger, TypeProvider> {
         websocketServer: WebSocket.Server
         injectWS: InjectWSFn<RawRequest>
-        status: Buffer
+        monitoring: Buffer
         favicon: Buffer
         internalDashboard: Buffer
         clients: number

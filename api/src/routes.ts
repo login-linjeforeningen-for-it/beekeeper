@@ -7,7 +7,6 @@ import getUsers from './handlers/user/getUsers.ts'
 import getLogin from './handlers/login/getLogin.ts'
 import getToken from './handlers/login/getToken.ts'
 import getTokenBTG from './handlers/login/getTokenBTG.ts'
-import getHealthStatus from './handlers/index/getStatus.ts'
 import getStatus from './handlers/monitoring/get.ts'
 import getCallback from './handlers/login/getCallback.ts'
 import postTraffic from './handlers/traffic/post.ts'
@@ -44,7 +43,6 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/', getIndex)
     fastify.get('/health', getHealth)
     fastify.get('/version', getVersion)
-    fastify.get('/status', getHealthStatus)
 
     // user
     fastify.get('/user/:email', getUser)

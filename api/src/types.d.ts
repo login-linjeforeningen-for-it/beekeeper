@@ -1,149 +1,3 @@
-type Service = {
-    context: string
-    name: string
-    status: string
-    service_status: ServiceStatusHuman
-    age: string
-}
-
-type LocalLog = {
-    context: string
-    namespace: string
-    id: string
-    name: string
-    event: string
-    status: ServiceStatusHuman
-    command: string
-    timestamp: string
-}
-
-type DomainsWithStatus = {
-    id: string
-    name: string
-    url: string
-    context: string
-    namespace: string
-    status: number
-}
-
-type ServiceAsList = {
-    context: string
-    name: string
-    status: string
-    service_status: ServiceStatusHuman
-    age: string
-}
-
-type ServiceStatusHuman = 'operational' | 'degraded' | 'down' | 'inactive'
-
-type Domain = {
-    id: string
-    name: string
-    url: string
-    context: string
-    namespace: string
-}
-
-type StatusDaily = {
-    date: string
-    uptime: number
-    status: ServiceStatusHuman
-}
-
-type StatusService = {
-    name: string
-    status: ServiceStatusHuman
-    issues?: string[]
-    uptimeLastMonth: number
-    dailyStatusLastMonth: StatusDaily[]
-}
-
-type StatusCache = {
-    age: number
-    data: {
-        prod: {
-            status: {
-                number: number
-                message: string
-            },
-            services: StatusService[]
-            meta: string
-        },
-        dev: {
-            status: {
-                number: number
-                message: string
-            },
-            services: StatusService[]
-            meta: string
-        }
-    } | null
-    refresh: number
-}
-
-type StatusStarting = {
-    prod: {
-        status: {
-            number: number
-            message: string
-            info: string
-        },
-        services: StatusService[]
-        meta: ServiceStatusHuman
-    }
-    dev: {
-        status: {
-            number: number
-            message: string
-            info: string
-        }
-        services: StatusService[]
-        meta: ServiceStatusHuman
-    }
-}
-
-type StatusDegraded = {
-    prod: {
-        status: {
-            number: number
-            message: string
-            error: string
-        },
-        services: StatusService[]
-        meta: ServiceStatusHuman
-    }
-    dev: {
-        status: {
-            number: number
-            message: string
-            error: string
-        }
-        services: StatusService[]
-        meta: ServiceStatusHuman
-    }
-}
-
-type StatusOperational = {
-    prod: {
-        status: {
-            number: number
-            message: ServiceStatusHuman
-        },
-        services: StatusService[]
-        meta: ServiceStatusHuman
-    }
-    dev: {
-        status: {
-            number: number
-            message: ServiceStatusHuman
-        },
-        services: StatusService[]
-        meta: string
-    }
-}
-
-type Status = StatusOperational | StatusStarting | StatusDegraded
-
 type CheckedServiceStatus = {
     id: number
     name: string
@@ -388,4 +242,32 @@ type GPT_CPU = {
 type GPT_GPU = {
     name: string
     load: number
+}
+
+type Monitoring = {
+    id: number
+    name: string
+    enabled: boolean
+    url: string
+    port: number
+    maxConsecutiveFailures: number
+    bars: Bar[]
+    uptime: string
+    tags: string[]
+    certificate?: Certificate
+}
+
+type Bar = {
+    status: boolean
+    delay: number
+    expectedDown: boolean
+    upsideDown: boolean
+    note: string | null
+    timestamp: string
+}
+
+type Certificate = {
+    valid: boolean
+    message: string
+    service: string
 }
