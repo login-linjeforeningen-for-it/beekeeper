@@ -37,7 +37,10 @@ export async function handleMessage(
 ) {
     try {
         const msg = JSON.parse(rawMessage.toString()) as { type?: string, client?: GPT_Client }
-        console.log('HANDLING MESSAGE', msg.type)
+        if (msg.type !== 'update') {
+            console.log('HANDLING MESSAGE', msg.type)
+        }
+
         switch (msg.type) {
             case 'update':
                 if (!msg.client) {
