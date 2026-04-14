@@ -30,14 +30,19 @@ function normalizeClient(client: GPT_Client): GPT_Client {
     }
 }
 
-export async function handleMessage(
-    id: string,
-    socket: WS,
-    rawMessage: RawData,
-) {
+export async function handleMessage(id: string, socket: WS, rawMessage: RawData) {
     try {
         const msg = JSON.parse(rawMessage.toString()) as { type?: string, client?: GPT_Client }
         if (msg.type !== 'update') {
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
+            console.log('HANDLING MESSAGE', msg.type)
             console.log('HANDLING MESSAGE', msg.type)
         }
 
@@ -167,17 +172,21 @@ function relayHistoryRequest(
     requester: WS,
     request: { clientName: string; conversationId: string }
 ) {
+    console.log('1 relayHistory')
     const clients = beeswarm.get(id)
     if (!clients) {
         return
     }
-
+    
+    console.log('2 relayHistory')
     const target = [...clients].find((client) => {
         const state = beeswarmSockets.get(client)
         return state?.role === 'producer' && state.clientName === request.clientName
     })
-
+    
+    console.log('3 relayHistory')
     if (!target || target.readyState !== WS.OPEN) {
+        console.log('3.1 relayHistory')
         requester.send(JSON.stringify({
             type: 'prompt_error',
             conversationId: request.conversationId,
@@ -187,7 +196,13 @@ function relayHistoryRequest(
         }))
         return
     }
-
+    
+    console.log('4 relayHistory')
+    console.log('sending history to', target, JSON.stringify({
+        type: 'history_request',
+        conversationId: request.conversationId,
+        clientName: request.clientName,
+    }))
     target.send(JSON.stringify({
         type: 'history_request',
         conversationId: request.conversationId,
