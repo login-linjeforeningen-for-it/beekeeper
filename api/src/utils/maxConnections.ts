@@ -11,9 +11,9 @@ export default function checkMaxConnectionsCron() {
 async function checkMaxConnections() {
     try {
         const result = await run('SELECT count(*) FROM pg_stat_activity WHERE state=\'active\';')
-        const active = Number(result.rows[0].count)
+        const active = Number(result.rows[0]?.count) || 0
         const maxRes = await run('SHOW max_connections;')
-        const maxConnections = Number(maxRes.rows[0].max_connections)
+        const maxConnections = Number(maxRes.rows[0]?.max_connections) || 0
         const THRESHOLD = Math.floor(maxConnections / 2)
         const SEVERE_THRESHOLD = (maxConnections / 10) * 9
 

@@ -8,7 +8,7 @@ export default async function getRequestsToday(): Promise<number> {
              WHERE timestamp >= date_trunc('day', NOW());`
         )
 
-        return Number(result.rows[0].count)
+        return Number(result.rows[0]?.count)
     } catch (error) {
         console.log(error)
         return 0
