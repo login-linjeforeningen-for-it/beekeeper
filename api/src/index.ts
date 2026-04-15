@@ -20,6 +20,22 @@ const fastify = Fastify({
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
 fastify.decorate('internalDashboard', Buffer.from(''))
 fastify.decorate('clients', 0)
+fastify.decorate('domains', Buffer.from(JSON.stringify({ domains: [] })))
+fastify.decorate('metrics', Buffer.from(JSON.stringify({
+    total_requests: "0",
+    avg_request_time: 0,
+    error_rate: 0,
+    top_status_codes: [],
+    top_methods: [],
+    top_domains: [],
+    top_paths: [],
+    top_slow_paths: [],
+    top_error_paths: [],
+    top_os: [],
+    top_browsers: [],
+    requests_over_time: []
+})))
+fastify.decorate('clients', 0)
 
 fastify.register(websocket)
 fastify.register(sse)

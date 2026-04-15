@@ -1,4 +1,4 @@
-import type { FastifyReply, FastifyRequest } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import run from '#db'
 
 type GetMetricsParams = {
@@ -7,9 +7,12 @@ type GetMetricsParams = {
     domain?: string
 }
 
-export default async function getMetrics(req: FastifyRequest, res: FastifyReply) {
-    const { time_start, time_end, domain } = req.query as GetMetricsParams || {}
+export default async function getMetrics(this: FastifyInstance, req: FastifyRequest, res: FastifyReply) {
+    if (!Object.keys(req.query as GetMetricsParams || {}).length) {
+        return this.metrics
+    }
 
+    const { time_start, time_end, domain } = req.query as GetMetricsParams || {}
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000
     let startDate = time_start ? new Date(String(time_start)) : new Date(Date.now() - oneWeekMs)
     let endDate = time_end ? new Date(String(time_end)) : new Date()
@@ -126,7 +129,6 @@ export default async function getMetrics(req: FastifyRequest, res: FastifyReply)
         )
 
         return res.status(200).send(result.rows[0])
-
     } catch (error) {
         console.log(error)
         return res.status(500).send({ error: 'Internal Server Error' })

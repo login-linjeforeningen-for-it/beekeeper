@@ -8,6 +8,7 @@ declare module 'fastify' {
         favicon: Buffer
         internalDashboard: Buffer
         domains: Buffer
+        metrics: Buffer
         clients: number
     }
 }
