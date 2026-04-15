@@ -7,6 +7,7 @@ declare module 'fastify' {
         monitoring: Buffer
         favicon: Buffer
         internalDashboard: Buffer
+        domains: Buffer
         clients: number
     }
 }
