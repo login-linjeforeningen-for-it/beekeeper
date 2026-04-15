@@ -35,7 +35,6 @@ fastify.decorate('metrics', Buffer.from(JSON.stringify({
     top_browsers: [],
     requests_over_time: []
 })))
-fastify.decorate('clients', 0)
 
 fastify.register(websocket)
 fastify.register(sse)
