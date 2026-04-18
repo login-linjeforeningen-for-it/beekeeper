@@ -10,7 +10,10 @@ export default async function getSystem(): Promise<System> {
         const data = await response.json()
         return data
     } catch (error) {
-        console.log(error)
+        if (!isExpectedInternalAuthError(error)) {
+            console.log(error)
+        }
+
         return {
             ram: 'No RAM',
             processes: 0,
@@ -19,4 +22,9 @@ export default async function getSystem(): Promise<System> {
             containers: 0
         }
     }
+}
+
+function isExpectedInternalAuthError(error: unknown) {
+    return error instanceof Error
+        && error.message.includes('Missing or invalid Authorization header')
 }

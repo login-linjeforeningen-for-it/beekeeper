@@ -37,6 +37,10 @@ import putService from './handlers/monitoring/putService.ts'
 import putStatusNotification from './handlers/monitoring/notification/putNotification.ts'
 import getInternalDashboard from './handlers/dashboard/internal/get.ts'
 import getClients from './handlers/ai/getClients.ts'
+import getConversations from './handlers/ai/getConversations.ts'
+import getConversation from './handlers/ai/getConversation.ts'
+import postConversation from './handlers/ai/postConversation.ts'
+import postSwitchConversationClient from './handlers/ai/postSwitchConversationClient.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
@@ -92,6 +96,10 @@ export default async function apiRoutes(fastify: FastifyInstance) {
 
     // ai
     fastify.get('/clients', getClients)
+    fastify.get('/ai/conversations', getConversations)
+    fastify.get('/ai/conversations/:id', getConversation)
+    fastify.post('/ai/conversations', postConversation)
+    fastify.post('/ai/conversations/:id/switch-client', postSwitchConversationClient)
 
     // internal dashboard
     fastify.get('/dashboard/internal', getInternalDashboard)

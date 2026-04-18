@@ -1,5 +1,6 @@
 import type { RawData } from 'ws'
 import { WebSocket as WS } from 'ws'
+import { persistAssistantResponse, persistUserPrompt } from '#utils/ai/conversations.ts'
 
 export const beeswarm = new Map<string, Set<WS>>()
 export const beeswarmSockets = new Map<WS, GPT_SocketState>()
@@ -100,6 +101,10 @@ function relayPromptRequest(id: string, requester: WS, request: GPT_PromptReques
         return
     }
 
+    const latestUserMessage = [...request.messages]
+        .reverse()
+        .find((message) => message.role === 'user' && message.content.trim())
+
     const targets = [...clients].filter((client) => {
         if (client === requester || client.readyState !== WS.OPEN) {
             return false
@@ -114,6 +119,19 @@ function relayPromptRequest(id: string, requester: WS, request: GPT_PromptReques
     })
 
     if (!targets.length) {
+        if (latestUserMessage) {
+            persistUserPrompt(request.conversationId, latestUserMessage.content, request.clientName || null)
+        }
+
+        persistAssistantResponse({
+            conversationId: request.conversationId,
+            clientName: request.clientName || null,
+            content: request.clientName
+                ? `Client ${request.clientName} is not connected.`
+                : 'No model client is connected.',
+            error: true,
+        })
+
         requester.send(JSON.stringify({
             type: 'prompt_error',
             conversationId: request.conversationId,
@@ -124,6 +142,10 @@ function relayPromptRequest(id: string, requester: WS, request: GPT_PromptReques
             timestamp: new Date().toISOString(),
         }))
         return
+    }
+
+    if (latestUserMessage) {
+        persistUserPrompt(request.conversationId, latestUserMessage.content, request.clientName || null)
     }
 
     targets[0].send(JSON.stringify(request))
@@ -153,6 +175,23 @@ function broadcastPromptEvent(id: string, sender: WS, event: { type?: string }) 
     const clients = beeswarm.get(id)
     if (!clients) {
         return
+    }
+
+    if (event.type === 'prompt_complete' && 'conversationId' in event && 'content' in event) {
+        persistAssistantResponse({
+            conversationId: String(event.conversationId || ''),
+            clientName: 'clientName' in event ? String(event.clientName || '') || null : null,
+            content: String(event.content || ''),
+        })
+    }
+
+    if (event.type === 'prompt_error' && 'conversationId' in event) {
+        persistAssistantResponse({
+            conversationId: String(event.conversationId || ''),
+            clientName: 'clientName' in event ? String(event.clientName || '') || null : null,
+            content: String(('error' in event && event.error) || 'The model failed to answer this prompt.'),
+            error: true,
+        })
     }
 
     const payload = JSON.stringify({

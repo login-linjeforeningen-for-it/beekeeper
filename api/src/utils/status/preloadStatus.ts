@@ -8,7 +8,6 @@ let domainInfo: any[] = []
 
 export default async function preloadStatus(): Promise<Monitoring[]> {
     try {
-        console.log('getStatus')
         const query = await loadSQL('fetchService.sql')
         const result = await run(query)
 

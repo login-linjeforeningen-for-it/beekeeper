@@ -9,7 +9,8 @@ services:
     ports:
       - "8002:8080"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
       .env
     healthcheck:
@@ -24,6 +25,7 @@ services:
     image: postgres:18
     container_name: beekeeper_database
     restart: always
+    entrypoint: ["/bin/sh", "/usr/local/bin/start-postgres.sh"]
     environment:
       POSTGRES_USER: ${DB_USER:-beekeeper}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -31,6 +33,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/start-postgres.sh:/usr/local/bin/start-postgres.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U beekeeper -d beekeeper"]
       interval: 5s
@@ -48,7 +51,8 @@ services:
       context: ./cron
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       DB_USER: ${DB_USER:-beekeeper}
       DB_PASSWORD: ${DB_PASSWORD}

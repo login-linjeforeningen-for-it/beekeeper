@@ -14,7 +14,15 @@ export default async function getBackups(): Promise<number> {
 
         return data.count
     } catch (error) {
-        console.log(error)
+        if (!isExpectedInternalAuthError(error)) {
+            console.log(error)
+        }
+
         return 0
     }
+}
+
+function isExpectedInternalAuthError(error: unknown) {
+    return error instanceof Error
+        && error.message.includes('Missing or invalid Authorization header')
 }

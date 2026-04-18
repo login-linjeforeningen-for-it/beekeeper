@@ -1,6 +1,6 @@
 {
   "name": "beekeeper",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -16,7 +16,7 @@
     "@fastify/cors": "^11.2.0",
     "@fastify/sse": "^0.4.0",
     "@fastify/websocket": "^11.2.0",
-    "fastify": "^5.8.4",
+    "fastify": "^5.8.5",
     "pg": "^8.20.0",
     "ws": "^8.20.0"
   },
@@ -26,9 +26,9 @@
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "@types/ws": "^8.18.1",
-    "eslint": "^10.2.0",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.1"
+    "eslint": "^10.2.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.58.2"
   },
   "imports": {
     "#utils/*": "./src/utils/*",

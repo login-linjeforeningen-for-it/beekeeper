@@ -1,24 +1,3 @@
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'beekeeper') THEN
-        CREATE DATABASE beekeeper;
-    END IF;
-END $$;
-
-\c beekeeper
-
-DO $$
-DECLARE
-    user_password text;
-BEGIN
-    user_password := current_setting('db_password', true);
-
-    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'beekeeper') THEN
-        EXECUTE format('CREATE USER beekeeper WITH ENCRYPTED PASSWORD %L', user_password);
-        EXECUTE 'GRANT ALL PRIVILEGES ON DATABASE beekeeper TO beekeeper';
-    END IF;
-END $$;
-
 -- Docker containers
 CREATE TABLE IF NOT EXISTS containers (
     id SERIAL PRIMARY KEY,
@@ -103,7 +82,33 @@ CREATE TABLE IF NOT EXISTS sites (
 );
 
 -- Indexes for sites
-CREATE UNIQUE INDEX primary_site ON sites ("primary") WHERE "primary" = TRUE;
+CREATE UNIQUE INDEX IF NOT EXISTS primary_site ON sites ("primary") WHERE "primary" = TRUE;
+
+-- AI conversations
+CREATE TABLE IF NOT EXISTS ai_conversations (
+    id UUID PRIMARY KEY,
+    title TEXT NOT NULL,
+    original_client_name TEXT NOT NULL,
+    active_client_name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ai_messages (
+    id UUID PRIMARY KEY,
+    conversation_id UUID NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('system', 'user', 'assistant')),
+    content TEXT NOT NULL,
+    error BOOLEAN NOT NULL DEFAULT FALSE,
+    client_name TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_updated_at_idx
+ON ai_conversations (updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS ai_messages_conversation_id_created_at_idx
+ON ai_messages (conversation_id, created_at ASC);
 
 -- Indexes for traffic
 CREATE INDEX IF NOT EXISTS idx_traffic_timestamp ON traffic (timestamp DESC);
@@ -124,10 +129,6 @@ CREATE INDEX IF NOT EXISTS idx_traffic_timestamp_user_agent ON traffic (timestam
 
 -- Heavy operations, more RAM required
 SET maintenance_work_mem = '1GB';
-
--- Indexes to speed up local log refresh query
-CREATE INDEX ON local_log (LOWER(namespace));
-CREATE INDEX ON local_log (LOWER(context));
 
 -- Trigram indexes for ILIKE searches
 CREATE EXTENSION IF NOT EXISTS pg_trgm;

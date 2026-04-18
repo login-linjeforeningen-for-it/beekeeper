@@ -271,3 +271,49 @@ type Certificate = {
     message: string
     service: string
 }
+
+type AiConversationSummary = {
+    id: string
+    title: string
+    originalClientName: string
+    activeClientName: string
+    createdAt: string
+    updatedAt: string
+    lastMessagePreview: string | null
+    lastMessageRole: 'system' | 'user' | 'assistant' | null
+    messageCount: number
+}
+
+type AiStoredMessage = {
+    id: string
+    role: 'system' | 'user' | 'assistant'
+    content: string
+    error: boolean
+    clientName: string | null
+    createdAt: string
+}
+
+type AiConversationRecord = AiConversationSummary & {
+    messages: AiStoredMessage[]
+}
+
+type AiConversationRow = {
+    id: string
+    title: string
+    original_client_name: string
+    active_client_name: string
+    created_at: string
+    updated_at: string
+    last_message_preview: string | null
+    last_message_role: 'system' | 'user' | 'assistant' | null
+    message_count: number
+}
+
+type AiMessageRow = {
+    id: string
+    role: 'system' | 'user' | 'assistant'
+    content: string
+    error: boolean
+    client_name: string | null
+    created_at: string
+}
