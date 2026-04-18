@@ -4,6 +4,14 @@ import { persistAssistantResponse, persistUserPrompt } from '#utils/ai/conversat
 
 export const beeswarm = new Map<string, Set<WS>>()
 export const beeswarmSockets = new Map<WS, GPT_SocketState>()
+const CHAT_BEHAVIOR_SYSTEM_PROMPT = [
+    'You are the Login AI assistant.',
+    'Prefer replying in English by default.',
+    "If the majority of the user's message is in Norwegian, reply in Norwegian.",
+    'Only reply in Chinese if the user clearly asks for Chinese.',
+    'If the user switches language, follow the same rule again for the newest user message.',
+    'Be concise, natural, and helpful.'
+].join(' ')
 
 function defaultModelMetrics(): GPT_ModelMetrics {
     return {
@@ -148,7 +156,10 @@ function relayPromptRequest(id: string, requester: WS, request: GPT_PromptReques
         persistUserPrompt(request.conversationId, latestUserMessage.content, request.clientName || null)
     }
 
-    targets[0].send(JSON.stringify(request))
+    targets[0].send(JSON.stringify({
+        ...request,
+        messages: withChatBehaviorSystemPrompt(request.messages),
+    }))
 }
 
 function broadcastUpdate(id: string, sender: WS, client: GPT_Client) {
@@ -264,4 +275,20 @@ function relayHistoryRequest(
         conversationId: request.conversationId,
         clientName: request.clientName,
     }))
+}
+
+function withChatBehaviorSystemPrompt(messages: GPT_ChatMessage[]) {
+    if (messages.some((message) =>
+        message.role === 'system'
+        && message.content === CHAT_BEHAVIOR_SYSTEM_PROMPT)) {
+        return messages
+    }
+
+    return [
+        {
+            role: 'system',
+            content: CHAT_BEHAVIOR_SYSTEM_PROMPT,
+        },
+        ...messages,
+    ]
 }
