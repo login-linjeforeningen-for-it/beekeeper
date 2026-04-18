@@ -94,6 +94,15 @@ export async function createAiConversation(clientName: string) {
     return await getAiConversation(conversationId)
 }
 
+export async function deleteAiConversation(conversationId: string) {
+    const result = await run(`
+        DELETE FROM ai_conversations
+        WHERE id = $1
+    `, [conversationId])
+
+    return (result.rowCount || 0) > 0
+}
+
 export async function persistUserPrompt(
     conversationId: string,
     content: string,

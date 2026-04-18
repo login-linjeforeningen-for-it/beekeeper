@@ -41,6 +41,7 @@ import getConversations from './handlers/ai/getConversations.ts'
 import getConversation from './handlers/ai/getConversation.ts'
 import postConversation from './handlers/ai/postConversation.ts'
 import postSwitchConversationClient from './handlers/ai/postSwitchConversationClient.ts'
+import deleteConversation from './handlers/ai/deleteConversation.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
@@ -100,6 +101,7 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/ai/conversations/:id', getConversation)
     fastify.post('/ai/conversations', postConversation)
     fastify.post('/ai/conversations/:id/switch-client', postSwitchConversationClient)
+    fastify.delete('/ai/conversations/:id', deleteConversation)
 
     // internal dashboard
     fastify.get('/dashboard/internal', getInternalDashboard)
