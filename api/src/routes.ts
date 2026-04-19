@@ -42,6 +42,11 @@ import getConversation from './handlers/ai/getConversation.ts'
 import postConversation from './handlers/ai/postConversation.ts'
 import postSwitchConversationClient from './handlers/ai/postSwitchConversationClient.ts'
 import deleteConversation from './handlers/ai/deleteConversation.ts'
+import postRestoreConversation from './handlers/ai/postRestoreConversation.ts'
+import postImportSession from './handlers/ai/postImportSession.ts'
+import postTransferConversation from './handlers/ai/postTransferConversation.ts'
+import postShareConversation from './handlers/ai/postShareConversation.ts'
+import postCopySharedConversation from './handlers/ai/postCopySharedConversation.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
@@ -100,7 +105,12 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/ai/conversations', getConversations)
     fastify.get('/ai/conversations/:id', getConversation)
     fastify.post('/ai/conversations', postConversation)
+    fastify.post('/ai/conversations/import-session', postImportSession)
+    fastify.post('/ai/conversations/:id/restore', postRestoreConversation)
+    fastify.post('/ai/conversations/:id/transfer', postTransferConversation)
+    fastify.post('/ai/conversations/:id/share', postShareConversation)
     fastify.post('/ai/conversations/:id/switch-client', postSwitchConversationClient)
+    fastify.post('/ai/shared/:token/copy', postCopySharedConversation)
     fastify.delete('/ai/conversations/:id', deleteConversation)
 
     // internal dashboard

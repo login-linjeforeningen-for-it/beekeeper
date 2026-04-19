@@ -1,15 +1,15 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { deleteAiConversation } from '#utils/ai/conversations.ts'
 import { resolveAiOwner } from '#utils/ai/owner.ts'
+import { restoreAiConversation } from '#utils/ai/conversations.ts'
 
-export default async function deleteConversation(
+export default async function postRestoreConversation(
     req: FastifyRequest<{ Params: { id: string } }>,
     res: FastifyReply
 ) {
     const owner = await resolveAiOwner(req)
-    const deleted = await deleteAiConversation(req.params.id, owner)
+    const restored = await restoreAiConversation(req.params.id, owner)
 
-    if (!deleted) {
+    if (!restored) {
         res.code(404).type('application/json').send({ error: 'Conversation not found.' })
         return
     }

@@ -141,6 +141,8 @@ type GPT_PromptRequest = {
     type: 'prompt_request'
     conversationId: string
     clientName?: string
+    ownerUserId?: string | null
+    ownerSessionId?: string | null
     messages: GPT_ChatMessage[]
     maxTokens?: number
     temperature?: number
@@ -277,6 +279,11 @@ type AiConversationSummary = {
     title: string
     originalClientName: string
     activeClientName: string
+    ownerUserId: string | null
+    ownerSessionId: string | null
+    deletedAt: string | null
+    shareToken: string | null
+    sharedFromConversationId: string | null
     createdAt: string
     updatedAt: string
     lastMessagePreview: string | null
@@ -302,6 +309,11 @@ type AiConversationRow = {
     title: string
     original_client_name: string
     active_client_name: string
+    owner_user_id: string | null
+    owner_session_id: string | null
+    deleted_at: string | null
+    share_token: string | null
+    shared_from_conversation_id: string | null
     created_at: string
     updated_at: string
     last_message_preview: string | null
@@ -316,4 +328,9 @@ type AiMessageRow = {
     error: boolean
     client_name: string | null
     created_at: string
+}
+
+type AiConversationOwner = {
+    userId: string | null
+    sessionId: string | null
 }

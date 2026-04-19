@@ -1,6 +1,10 @@
 import type { RawData } from 'ws'
 import { WebSocket as WS } from 'ws'
-import { persistAssistantResponse, persistUserPrompt } from '#utils/ai/conversations.ts'
+import {
+    canOwnerAccessConversation,
+    persistAssistantResponse,
+    persistUserPrompt
+} from '#utils/ai/conversations.ts'
 
 export const beeswarm = new Map<string, Set<WS>>()
 export const beeswarmSockets = new Map<WS, GPT_SocketState>()
@@ -103,9 +107,25 @@ export async function handleMessage(id: string, socket: WS, rawMessage: RawData)
     }
 }
 
-function relayPromptRequest(id: string, requester: WS, request: GPT_PromptRequest) {
+async function relayPromptRequest(id: string, requester: WS, request: GPT_PromptRequest) {
     const clients = beeswarm.get(id)
     if (!clients) {
+        return
+    }
+
+    const owner = {
+        userId: request.ownerUserId || null,
+        sessionId: request.ownerSessionId || null,
+    }
+
+    if (!(await canOwnerAccessConversation(request.conversationId, owner))) {
+        requester.send(JSON.stringify({
+            type: 'prompt_error',
+            conversationId: request.conversationId,
+            clientName: request.clientName || null,
+            error: 'You do not have access to this conversation.',
+            timestamp: new Date().toISOString(),
+        }))
         return
     }
 

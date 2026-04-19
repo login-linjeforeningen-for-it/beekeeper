@@ -94,6 +94,13 @@ CREATE TABLE IF NOT EXISTS ai_conversations (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE ai_conversations
+    ADD COLUMN IF NOT EXISTS owner_user_id TEXT,
+    ADD COLUMN IF NOT EXISTS owner_session_id TEXT,
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS share_token UUID UNIQUE,
+    ADD COLUMN IF NOT EXISTS shared_from_conversation_id UUID REFERENCES ai_conversations(id) ON DELETE SET NULL;
+
 CREATE TABLE IF NOT EXISTS ai_messages (
     id UUID PRIMARY KEY,
     conversation_id UUID NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
@@ -106,6 +113,18 @@ CREATE TABLE IF NOT EXISTS ai_messages (
 
 CREATE INDEX IF NOT EXISTS ai_conversations_updated_at_idx
 ON ai_conversations (updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_owner_user_id_idx
+ON ai_conversations (owner_user_id);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_owner_session_id_idx
+ON ai_conversations (owner_session_id);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_deleted_at_idx
+ON ai_conversations (deleted_at DESC);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_share_token_idx
+ON ai_conversations (share_token);
 
 CREATE INDEX IF NOT EXISTS ai_messages_conversation_id_created_at_idx
 ON ai_messages (conversation_id, created_at ASC);
