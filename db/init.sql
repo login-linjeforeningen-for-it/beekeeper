@@ -99,7 +99,35 @@ ALTER TABLE ai_conversations
     ADD COLUMN IF NOT EXISTS owner_session_id TEXT,
     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ,
     ADD COLUMN IF NOT EXISTS share_token UUID UNIQUE,
-    ADD COLUMN IF NOT EXISTS shared_from_conversation_id UUID REFERENCES ai_conversations(id) ON DELETE SET NULL;
+    ADD COLUMN IF NOT EXISTS shared_from_conversation_id UUID REFERENCES ai_conversations(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS last_message_preview TEXT,
+    ADD COLUMN IF NOT EXISTS last_message_role TEXT,
+    ADD COLUMN IF NOT EXISTS message_count INTEGER NOT NULL DEFAULT 0;
+
+UPDATE ai_conversations c
+SET
+    last_message_preview = (
+        SELECT m.content
+        FROM ai_messages m
+        WHERE m.conversation_id = c.id
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT 1
+    ),
+    last_message_role = (
+        SELECT m.role
+        FROM ai_messages m
+        WHERE m.conversation_id = c.id
+        ORDER BY m.created_at DESC, m.id DESC
+        LIMIT 1
+    ),
+    message_count = (
+        SELECT COUNT(*)::int
+        FROM ai_messages m
+        WHERE m.conversation_id = c.id
+    )
+WHERE c.last_message_preview IS NULL
+   OR c.last_message_role IS NULL
+   OR c.message_count = 0;
 
 CREATE TABLE IF NOT EXISTS ai_messages (
     id UUID PRIMARY KEY,
@@ -125,6 +153,12 @@ ON ai_conversations (deleted_at DESC);
 
 CREATE INDEX IF NOT EXISTS ai_conversations_share_token_idx
 ON ai_conversations (share_token);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_owner_user_deleted_updated_idx
+ON ai_conversations (owner_user_id, deleted_at, updated_at DESC);
+
+CREATE INDEX IF NOT EXISTS ai_conversations_owner_session_deleted_updated_idx
+ON ai_conversations (owner_session_id, deleted_at, updated_at DESC);
 
 CREATE INDEX IF NOT EXISTS ai_messages_conversation_id_created_at_idx
 ON ai_messages (conversation_id, created_at ASC);

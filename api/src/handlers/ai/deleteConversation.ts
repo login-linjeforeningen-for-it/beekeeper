@@ -1,11 +1,13 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { deleteAiConversation } from '#utils/ai/conversations.ts'
 import { resolveAiOwner } from '#utils/ai/owner.ts'
+import { setAiResponseHeaders } from './shared.ts'
 
 export default async function deleteConversation(
     req: FastifyRequest<{ Params: { id: string } }>,
     res: FastifyReply
 ) {
+    setAiResponseHeaders(res)
     const owner = await resolveAiOwner(req)
     const deleted = await deleteAiConversation(req.params.id, owner)
 

@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { resolveAiOwner } from '#utils/ai/owner.ts'
 import { transferAiConversationToUser } from '#utils/ai/conversations.ts'
+import { setAiResponseHeaders } from './shared.ts'
 
 type Body = {
     userId?: string
@@ -10,6 +11,7 @@ export default async function postTransferConversation(
     req: FastifyRequest<{ Params: { id: string }, Body: Body }>,
     res: FastifyReply
 ) {
+    setAiResponseHeaders(res)
     const owner = await resolveAiOwner(req)
     const nextUserId = req.body?.userId?.trim() || owner.userId
 

@@ -28,13 +28,11 @@ const pool = new Pool({
 export default async function run(query: string, params?: (string | number | null | boolean)[]) {
     while (true) {
         try {
-            const client = await pool.connect()
-            try {
-                return await client.query(query, params ?? [])
-            } finally {
-                client.release()
-            }
+            return await pool.query(query, params ?? [])
         } catch (error) {
+            if (!isRetryableDatabaseError(error)) {
+                throw error
+            }
             console.log(error)
             debug({ basic: `Pool currently unavailable, retrying in ${config.TIMEOUT_MS / 1000}s...` })
             await sleep(config.TIMEOUT_MS)
@@ -57,4 +55,31 @@ export async function runInTransaction(callback: (client: pg.PoolClient) => Prom
     } finally {
         client.release()
     }
+}
+
+function isRetryableDatabaseError(error: unknown) {
+    if (!error || typeof error !== 'object') {
+        return false
+    }
+
+    const message = 'message' in error && typeof error.message === 'string'
+        ? error.message
+        : ''
+    const code = 'code' in error && typeof error.code === 'string'
+        ? error.code
+        : ''
+
+    return [
+        '57P01',
+        '57P02',
+        '57P03',
+        '53300',
+        'ETIMEDOUT',
+        'ECONNRESET',
+        'ECONNREFUSED',
+        'CONNECTION_ENDED',
+    ].includes(code)
+        || message.includes('Connection terminated unexpectedly')
+        || message.includes('timeout expired')
+        || message.includes('connect ECONNREFUSED')
 }

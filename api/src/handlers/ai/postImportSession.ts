@@ -1,6 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { resolveAiOwner } from '#utils/ai/owner.ts'
 import { importAiConversationsFromSession } from '#utils/ai/conversations.ts'
+import { setAiResponseHeaders } from './shared.ts'
 
 type Body = {
     sessionId?: string
@@ -10,6 +11,7 @@ export default async function postImportSession(
     req: FastifyRequest<{ Body: Body }>,
     res: FastifyReply
 ) {
+    setAiResponseHeaders(res)
     const owner = await resolveAiOwner(req)
     const sessionId = req.body?.sessionId?.trim()
 
