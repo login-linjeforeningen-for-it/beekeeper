@@ -38,7 +38,7 @@ export async function listAiConversations(
             c.last_message_role,
             c.message_count
         FROM ai_conversations c
-        WHERE ${buildOwnerWhereClause(owner)}
+        WHERE ${buildOwnerWhereClause(owner, 1, 'c.')}
           AND ${options.deleted ? `c.deleted_at IS NOT NULL AND c.deleted_at >= ${DELETE_RETENTION_SQL}` : 'c.deleted_at IS NULL'}
         ORDER BY c.updated_at DESC, c.created_at DESC
     `, buildOwnerParams(owner))
@@ -68,7 +68,7 @@ export async function getAiConversation(
     }
 
     const params: string[] = [conversationId]
-    const ownerWhere = owner ? `AND ${buildOwnerWhereClause(owner, 2)}` : ''
+    const ownerWhere = owner ? `AND ${buildOwnerWhereClause(owner, 2, 'c.')}` : ''
     if (owner) {
         params.push(...buildOwnerParams(owner))
     }
@@ -447,7 +447,7 @@ export async function canOwnerAccessConversation(conversationId: string, owner: 
         SELECT 1
         FROM ai_conversations
         WHERE id = $1
-          AND ${buildOwnerWhereClause(owner, 2)}
+          AND ${buildOwnerWhereClause(owner, 2, '')}
           AND deleted_at IS NULL
         LIMIT 1
     `, [conversationId, ...buildOwnerParams(owner)])
