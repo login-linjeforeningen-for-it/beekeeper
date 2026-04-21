@@ -6,7 +6,7 @@ export default async function deleteSite(req: FastifyRequest, res: FastifyReply)
     const { id } = req.params as { id: string }
 
     try {
-        const check = await run('SELECT primary FROM site WHERE id = $1;', [id])
+        const check = await run('SELECT primary FROM sites WHERE id = $1;', [id])
 
         if (check.rowCount === 0) {
             return res.status(404).send({ error: 'Site not found' })

@@ -35,11 +35,13 @@ export default async function putSite(req: FastifyRequest,res: FastifyReply) {
                     ip = COALESCE($2, ip),
                     primary = COALESCE($3, primary),
                     operational = COALESCE($4, operational),
-                    updated_by = $5,
+                    note = COALESCE($5, note),
+                    maintenance = COALESCE($6, maintenance),
+                    updated_by = $7,
                     updated_at = NOW()
-                WHERE id = $6
+                WHERE id = $8
                 RETURNING *;`,
-                [name, ip, primary, operational, updatedBy, id, note || null, maintenance]
+                [name, ip, primary, operational, note ?? null, maintenance, updatedBy, id]
             )
 
             if (updateResult.rowCount === 0) {

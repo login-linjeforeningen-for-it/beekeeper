@@ -8,13 +8,37 @@ import apiRoutes from './routes.ts'
 import cron from '#utils/cron.ts'
 import fp from './fp.ts'
 import ws from './plugins/ws.ts'
+import { installJsonConsoleLogger, log } from './utils/jsonLogger.ts'
 
 import getIndexHandler from './handlers/index/getIndex.ts'
 import getFavicon from './handlers/favicon/getFavicon.ts'
 
 const port = Number(process.env.PORT) || 8080
+installJsonConsoleLogger()
 const fastify = Fastify({
-    logger: true
+    logger: {
+        level: process.env.LOG_LEVEL ?? 'info',
+        base: {
+            service: 'beekeeper_api',
+            runtime: 'api',
+            environment: process.env.NODE_ENV ?? 'development',
+        },
+        redact: {
+            paths: [
+                'req.headers.authorization',
+                'req.headers.cookie',
+                'req.headers.x-auth-request-access-token',
+                'req.headers.x-auth-request-token',
+            ],
+            censor: '[REDACTED]'
+        },
+        timestamp: () => `,"time":"${new Date().toISOString()}"`,
+        formatters: {
+            level(label) {
+                return { level: label }
+            }
+        }
+    }
 })
 
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
@@ -52,6 +76,10 @@ fastify.get('/favicon.ico', getFavicon)
 async function start() {
     try {
         await fastify.listen({ port, host: '0.0.0.0' })
+        log('info', 'Beekeeper API started', {
+            event: 'api.started',
+            port,
+        })
     } catch (err) {
         fastify.log.error(err)
         process.exit(1)

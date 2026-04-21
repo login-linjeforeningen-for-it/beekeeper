@@ -3,9 +3,8 @@ import run from '#db'
 import debug from '#utils/debug.ts'
 
 export default async function getSites(req: FastifyRequest, res: FastifyReply) {
-    const { id } = req.params as { id: string }
     try {
-        const result = await run('SELECT * FROM sites;', [id])
+        const result = await run('SELECT * FROM sites ORDER BY primary DESC, operational DESC, name ASC;')
         return res.send(result.rows)
     } catch (error) {
         debug({ basic: `Database error in getSites: ${JSON.stringify(error)}` })

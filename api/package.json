@@ -1,6 +1,6 @@
 {
   "name": "beekeeper",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -28,7 +28,7 @@
     "@types/ws": "^8.18.1",
     "eslint": "^10.2.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2"
+    "typescript-eslint": "^8.59.0"
   },
   "imports": {
     "#utils/*": "./src/utils/*",
