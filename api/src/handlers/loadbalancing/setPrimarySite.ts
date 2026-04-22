@@ -6,11 +6,11 @@ export default async function setPrimarySite(req: FastifyRequest, res: FastifyRe
 
     try {
         const result = await runInTransaction(async (client) => {
-            await client.query('UPDATE sites SET primary = FALSE WHERE primary = TRUE;')
+            await client.query('UPDATE sites SET "primary" = FALSE WHERE "primary" = TRUE;')
 
             const updateResult = await client.query(
                 `UPDATE sites
-                SET primary = TRUE, updated_at = NOW()
+                SET "primary" = TRUE, updated_at = NOW()
                 WHERE id = $1
                 RETURNING *;`,
                 [id]

@@ -24,11 +24,11 @@ export default async function postSite(req: FastifyRequest, res: FastifyReply) {
 
     const result = await runInTransaction(async (client) => {
         if (primary) {
-            await client.query('UPDATE sites SET primary = FALSE WHERE primary = TRUE;')
+            await client.query('UPDATE sites SET "primary" = FALSE WHERE "primary" = TRUE;')
         }
 
         const insertResult = await client.query(
-            `INSERT INTO sites (name, ip, primary, operational, added_by, updated_by, note, maintenance)
+            `INSERT INTO sites (name, ip, "primary", operational, added_by, updated_by, note, maintenance)
             VALUES ($1, $2, $3, $4, $5, $5, $6, $7)
             RETURNING *;`,
             [name, ip, primary, operational, addedBy, note || null, maintenance]

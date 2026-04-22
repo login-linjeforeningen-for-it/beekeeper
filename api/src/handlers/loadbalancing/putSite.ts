@@ -26,14 +26,14 @@ export default async function putSite(req: FastifyRequest,res: FastifyReply) {
     try {
         const result = await runInTransaction(async (client) => {
             if (primary === true) {
-                await client.query('UPDATE sites SET primary = FALSE WHERE primary = TRUE;')
+                await client.query('UPDATE sites SET "primary" = FALSE WHERE "primary" = TRUE;')
             }
 
             const updateResult = await client.query(
                 `UPDATE sites
                 SET name = COALESCE($1, name),
                     ip = COALESCE($2, ip),
-                    primary = COALESCE($3, primary),
+                    "primary" = COALESCE($3, "primary"),
                     operational = COALESCE($4, operational),
                     note = COALESCE($5, note),
                     maintenance = COALESCE($6, maintenance),
