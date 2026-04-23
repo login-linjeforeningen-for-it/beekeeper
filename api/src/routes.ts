@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 
-import preHandler from '#utils/authMiddleware.ts'
+import preHandler from '#utils/auth/middleware.ts'
 
 import getUser from './handlers/user/getUser.ts'
 import getUsers from './handlers/user/getUsers.ts'
@@ -47,6 +47,23 @@ import postImportSession from './handlers/ai/postImportSession.ts'
 import postTransferConversation from './handlers/ai/postTransferConversation.ts'
 import postShareConversation from './handlers/ai/postShareConversation.ts'
 import postCopySharedConversation from './handlers/ai/postCopySharedConversation.ts'
+import {
+    getInternalBackup,
+    getInternalBackupFiles,
+    getInternalDb,
+    getInternalDeployment,
+    getInternalDocker,
+    getInternalDockerContainer,
+    getInternalDockerLogs,
+    getInternalIngress,
+    getInternalStats,
+    getInternalVulnerabilities,
+    postInternalBackup,
+    postInternalBackupRestore,
+    postInternalDeploymentRun,
+    postInternalVulnerabilityScan,
+    putInternalDeploymentAuto,
+} from './handlers/internal/proxy.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
@@ -115,4 +132,21 @@ export default async function apiRoutes(fastify: FastifyInstance) {
 
     // internal dashboard
     fastify.get('/dashboard/internal', getInternalDashboard)
+
+    // internal api proxy
+    fastify.get('/stats', { preHandler }, getInternalStats)
+    fastify.get('/docker', { preHandler }, getInternalDocker)
+    fastify.get('/docker/logs', { preHandler }, getInternalDockerLogs)
+    fastify.get('/docker/:id', { preHandler }, getInternalDockerContainer)
+    fastify.get('/ingress/:port', { preHandler }, getInternalIngress)
+    fastify.get('/db', { preHandler }, getInternalDb)
+    fastify.get('/backup', { preHandler }, getInternalBackup)
+    fastify.post('/backup', { preHandler }, postInternalBackup)
+    fastify.get('/backup/files', { preHandler }, getInternalBackupFiles)
+    fastify.post('/backup/restore', { preHandler }, postInternalBackupRestore)
+    fastify.get('/vulnerabilities', { preHandler }, getInternalVulnerabilities)
+    fastify.post('/vulnerabilities/scan', { preHandler }, postInternalVulnerabilityScan)
+    fastify.get('/deployments/:id', { preHandler }, getInternalDeployment)
+    fastify.put('/deployments/:id/auto', { preHandler }, putInternalDeploymentAuto)
+    fastify.post('/deployments/:id/run', { preHandler }, postInternalDeploymentRun)
 }

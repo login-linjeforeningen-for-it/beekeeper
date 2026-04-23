@@ -8,13 +8,15 @@ import apiRoutes from './routes.ts'
 import cron from '#utils/cron.ts'
 import fp from './fp.ts'
 import ws from './plugins/ws.ts'
-import { installJsonConsoleLogger, log } from './utils/jsonLogger.ts'
+import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
 
 import getIndexHandler from './handlers/index/getIndex.ts'
 import getFavicon from './handlers/favicon/getFavicon.ts'
 
 const port = Number(process.env.PORT) || 8080
+
 installJsonConsoleLogger()
+
 const fastify = Fastify({
     logger: {
         level: process.env.LOG_LEVEL ?? 'info',

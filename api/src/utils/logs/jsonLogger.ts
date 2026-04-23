@@ -38,6 +38,57 @@ const REDACTED_KEYS = [
     'api_key',
 ]
 
+export function installJsonConsoleLogger() {
+    if ((globalThis as { __beekeeperJsonConsoleInstalled?: boolean }).__beekeeperJsonConsoleInstalled) {
+        return
+    }
+
+    ;(globalThis as { __beekeeperJsonConsoleInstalled?: boolean }).__beekeeperJsonConsoleInstalled = true
+
+    const methods: Array<{ consoleMethod: 'log' | 'info' | 'warn' | 'error', level: LogLevel }> = [
+        { consoleMethod: 'log', level: 'info' },
+        { consoleMethod: 'info', level: 'info' },
+        { consoleMethod: 'warn', level: 'warn' },
+        { consoleMethod: 'error', level: 'error' },
+    ]
+
+    for (const { consoleMethod, level } of methods) {
+        console[consoleMethod] = (...args: unknown[]) => {
+            const normalized = normalizeArgs(args)
+            write({
+                time: new Date().toISOString(),
+                level,
+                service: 'beekeeper_api',
+                runtime: 'api',
+                environment: process.env.NODE_ENV ?? 'development',
+                pid: process.pid,
+                hostname: process.env.HOSTNAME ?? 'unknown',
+                msg: normalized.msg,
+                err: normalized.err,
+                context: normalized.context,
+                data: normalized.data,
+                origin: getOrigin(),
+            })
+        }
+    }
+}
+
+
+export function log(level: LogLevel, msg: string, context?: Record<string, unknown>) {
+    write({
+        time: new Date().toISOString(),
+        level,
+        service: 'beekeeper_api',
+        runtime: 'api',
+        environment: process.env.NODE_ENV ?? 'development',
+        pid: process.pid,
+        hostname: process.env.HOSTNAME ?? 'unknown',
+        msg,
+        context: context ? redactValue(context) as Record<string, unknown> : undefined,
+        origin: getOrigin(),
+    })
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -141,54 +192,4 @@ function getOrigin() {
 
 function write(entry: JsonLogEntry) {
     process.stdout.write(`${JSON.stringify(entry)}\n`)
-}
-
-export function log(level: LogLevel, msg: string, context?: Record<string, unknown>) {
-    write({
-        time: new Date().toISOString(),
-        level,
-        service: 'beekeeper_api',
-        runtime: 'api',
-        environment: process.env.NODE_ENV ?? 'development',
-        pid: process.pid,
-        hostname: process.env.HOSTNAME ?? 'unknown',
-        msg,
-        context: context ? redactValue(context) as Record<string, unknown> : undefined,
-        origin: getOrigin(),
-    })
-}
-
-export function installJsonConsoleLogger() {
-    if ((globalThis as { __beekeeperJsonConsoleInstalled?: boolean }).__beekeeperJsonConsoleInstalled) {
-        return
-    }
-
-    ;(globalThis as { __beekeeperJsonConsoleInstalled?: boolean }).__beekeeperJsonConsoleInstalled = true
-
-    const methods: Array<{ consoleMethod: 'log' | 'info' | 'warn' | 'error', level: LogLevel }> = [
-        { consoleMethod: 'log', level: 'info' },
-        { consoleMethod: 'info', level: 'info' },
-        { consoleMethod: 'warn', level: 'warn' },
-        { consoleMethod: 'error', level: 'error' },
-    ]
-
-    for (const { consoleMethod, level } of methods) {
-        console[consoleMethod] = (...args: unknown[]) => {
-            const normalized = normalizeArgs(args)
-            write({
-                time: new Date().toISOString(),
-                level,
-                service: 'beekeeper_api',
-                runtime: 'api',
-                environment: process.env.NODE_ENV ?? 'development',
-                pid: process.pid,
-                hostname: process.env.HOSTNAME ?? 'unknown',
-                msg: normalized.msg,
-                err: normalized.err,
-                context: normalized.context,
-                data: normalized.data,
-                origin: getOrigin(),
-            })
-        }
-    }
 }

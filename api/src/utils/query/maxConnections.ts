@@ -1,6 +1,6 @@
 import config from '#constants'
 import run from '#db'
-import debug from './debug.ts'
+import debug from '#utils/debug.ts'
 
 export default function checkMaxConnectionsCron() {
     setTimeout(() => {

@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import run from '#db'
-import tokenWrapper from '#utils/tokenWrapper.ts'
+import tokenWrapper from '#utils/auth/tokenWrapper.ts'
 import debug from '#utils/debug.ts'
 
 type PutStatusBody = {

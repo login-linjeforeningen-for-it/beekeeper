@@ -1,6 +1,6 @@
 import run from '#db'
 import debug from '#utils/debug.ts'
-import { loadSQL } from '#utils/loadSQL.ts'
+import { loadSQL } from '#utils/query/loadSQL.ts'
 import { getCertificateDetails } from './getCertificateDetails'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

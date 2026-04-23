@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import run from '#db'
 import debug from '#utils/debug.ts'
-import { loadSQL } from '#utils/loadSQL.ts'
+import { loadSQL } from '#utils/query/loadSQL.ts'
 import roundToNearestMinute from '#utils/status/roundToNearestMinute.ts'
 
 export default async function postStatusUpdate(req: FastifyRequest, res: FastifyReply) {

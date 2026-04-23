@@ -1,4 +1,4 @@
-import checkMaxConnectionsCron from './maxConnections.ts'
+import checkMaxConnectionsCron from './query/maxConnections.ts'
 import monitor from './status/monitor.ts'
 
 export default function cron() {

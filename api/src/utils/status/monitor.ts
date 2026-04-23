@@ -1,6 +1,6 @@
 import config from '#constants'
 import run from '#db'
-import { loadSQL } from '#utils/loadSQL.ts'
+import { loadSQL } from '#utils/query/loadSQL.ts'
 import notify from './notify.ts'
 import checkTcpService from './tcp.ts'
 
