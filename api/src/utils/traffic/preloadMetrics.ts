@@ -10,7 +10,7 @@ export default async function preloadMetrics() {
     } catch (error) {
         console.log(error)
         return {
-            total_requests: "0",
+            total_requests: '0',
             avg_request_time: 0,
             error_rate: 0,
             top_status_codes: [],

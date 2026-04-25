@@ -13,7 +13,8 @@ const requiredEnvironmentVariables = [
     'WEBHOOK_URL',
     'CRITICAL_ROLE',
     'CRITICAL_DEVELOPMENT_ROLE',
-    'TRAFFIC_SECRET'
+    'TRAFFIC_SECRET',
+    'INTERNAL_TOKEN'
 ]
 
 const missingVariables = requiredEnvironmentVariables.filter(
@@ -30,7 +31,7 @@ if (missingVariables.length > 0) {
 }
 
 const env = Object.fromEntries(
-    [...requiredEnvironmentVariables, 'INTERNAL_TOKEN', 'BEEKEEPER_TOKEN']
+    [...requiredEnvironmentVariables]
         .map((key) => [key, process.env[key]])
 )
 
@@ -60,7 +61,7 @@ const config = {
     USER_ENDPOINT,
     AUTHENTIK_TOKEN: env.AUTHENTIK_TOKEN,
     BTG_TOKEN: env.BTG_TOKEN,
-    INTERNAL_TOKEN: env.INTERNAL_TOKEN || env.BEEKEEPER_TOKEN,
+    INTERNAL_TOKEN: env.INTERNAL_TOKEN,
     CRITICAL_ROLE: env.CRITICAL_ROLE,
     CRITICAL_DEVELOPMENT_ROLE: env.CRITICAL_DEVELOPMENT_ROLE,
     WEBHOOK_URL: env.WEBHOOK_URL,

@@ -136,6 +136,119 @@ ON ai_conversations (owner_session_id, deleted_at, updated_at DESC);
 CREATE INDEX IF NOT EXISTS ai_messages_conversation_id_created_at_idx
 ON ai_messages (conversation_id, created_at ASC);
 
+-- Scout state
+CREATE TABLE IF NOT EXISTS scout_state (
+    id INTEGER PRIMARY KEY,
+    updated_at TEXT,
+    project_root TEXT NOT NULL DEFAULT '',
+    projects_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    projects_interval_minutes INTEGER NOT NULL DEFAULT 1,
+    projects_last_started_at TEXT,
+    projects_last_finished_at TEXT,
+    projects_last_success_at TEXT,
+    projects_last_error TEXT,
+    projects_result JSONB,
+    one_password_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    one_password_interval_minutes INTEGER NOT NULL DEFAULT 30,
+    one_password_last_started_at TEXT,
+    one_password_last_finished_at TEXT,
+    one_password_last_success_at TEXT,
+    one_password_last_error TEXT,
+    one_password_result JSONB,
+    CHECK (id = 1)
+);
+
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS updated_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS project_root TEXT NOT NULL DEFAULT '';
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_enabled BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_interval_minutes INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_last_started_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_last_finished_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_last_success_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_last_error TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS projects_result JSONB;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_interval_minutes INTEGER NOT NULL DEFAULT 30;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_last_started_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_last_finished_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_last_success_at TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_last_error TEXT;
+ALTER TABLE scout_state ADD COLUMN IF NOT EXISTS one_password_result JSONB;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'scout_state'
+          AND column_name = 'state'
+    ) THEN
+        UPDATE scout_state
+        SET updated_at = COALESCE(updated_at, state->>'updatedAt'),
+            project_root = CASE
+                WHEN project_root = '' THEN COALESCE(state->>'projectRoot', '')
+                ELSE project_root
+            END,
+            projects_enabled = COALESCE((state->'projects'->>'enabled')::boolean, projects_enabled),
+            projects_interval_minutes = COALESCE((state->'projects'->>'intervalMinutes')::integer, projects_interval_minutes),
+            projects_last_started_at = COALESCE(projects_last_started_at, state->'projects'->>'lastStartedAt'),
+            projects_last_finished_at = COALESCE(projects_last_finished_at, state->'projects'->>'lastFinishedAt'),
+            projects_last_success_at = COALESCE(projects_last_success_at, state->'projects'->>'lastSuccessAt'),
+            projects_last_error = COALESCE(projects_last_error, state->'projects'->>'lastError'),
+            projects_result = COALESCE(projects_result, state->'projects'->'result'),
+            one_password_enabled = COALESCE((state->'onePassword'->>'enabled')::boolean, one_password_enabled),
+            one_password_interval_minutes = COALESCE((state->'onePassword'->>'intervalMinutes')::integer, one_password_interval_minutes),
+            one_password_last_started_at = COALESCE(one_password_last_started_at, state->'onePassword'->>'lastStartedAt'),
+            one_password_last_finished_at = COALESCE(one_password_last_finished_at, state->'onePassword'->>'lastFinishedAt'),
+            one_password_last_success_at = COALESCE(one_password_last_success_at, state->'onePassword'->>'lastSuccessAt'),
+            one_password_last_error = COALESCE(one_password_last_error, state->'onePassword'->>'lastError'),
+            one_password_result = COALESCE(one_password_result, state->'onePassword'->'result')
+        WHERE state IS NOT NULL;
+
+        ALTER TABLE scout_state DROP COLUMN state;
+    END IF;
+END $$;
+
+INSERT INTO scout_state (
+    id,
+    updated_at,
+    project_root,
+    projects_enabled,
+    projects_interval_minutes,
+    projects_last_started_at,
+    projects_last_finished_at,
+    projects_last_success_at,
+    projects_last_error,
+    projects_result,
+    one_password_enabled,
+    one_password_interval_minutes,
+    one_password_last_started_at,
+    one_password_last_finished_at,
+    one_password_last_success_at,
+    one_password_last_error,
+    one_password_result
+)
+VALUES (
+    1,
+    NULL,
+    '',
+    TRUE,
+    1,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    FALSE,
+    30,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+)
+ON CONFLICT (id) DO NOTHING;
+
 -- Indexes for traffic
 CREATE INDEX IF NOT EXISTS idx_traffic_timestamp ON traffic (timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_traffic_domain_trgm ON traffic (domain);

@@ -14,6 +14,8 @@ import getMetrics from './handlers/traffic/getMetrics.ts'
 import getRecords from './handlers/traffic/getRecords.ts'
 import getDomains from './handlers/traffic/getDomains.ts'
 import getLive from './handlers/traffic/getLive.ts'
+import getScout from './handlers/scouterbee/get.ts'
+import getScoutLive from './handlers/scouterbee/getLive.ts'
 import postStatusUpdate from './handlers/monitoring/postUpdate.ts'
 import postService from './handlers/monitoring/post.ts'
 import getIndex from './handlers/index/getIndex.ts'
@@ -87,6 +89,10 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/traffic/domains', { preHandler }, getDomains)
     fastify.get('/traffic/live', { sse: true, preHandler }, getLive)
     fastify.post('/traffic', postTraffic)
+    fastify.get('/scout', { preHandler }, getScout)
+    fastify.get('/scout/live', { sse: true, preHandler }, getScoutLive)
+    fastify.get('/scouterbee', { preHandler }, getScout)
+    fastify.get('/scouterbee/live', { sse: true, preHandler }, getScoutLive)
 
     // status
     fastify.get('/monitoring', getStatus)

@@ -1,6 +1,6 @@
 import run, { runInTransaction } from '#db'
 
-const DELETE_RETENTION_SQL = `NOW() - INTERVAL '30 days'`
+const DELETE_RETENTION_SQL = 'NOW() - INTERVAL \'30 days\''
 const PRUNE_INTERVAL_MS = 1000 * 60 * 10
 const IMPORT_INTERVAL_MS = 1000 * 30
 const READ_CACHE_TTL_MS = 1000

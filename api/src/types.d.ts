@@ -455,3 +455,86 @@ type AiConversationOwner = {
     userId: string | null
     sessionId: string | null
 }
+
+type VulnerabilityCounts = {
+    info: number
+    low: number
+    moderate: number
+    high: number
+    critical: number
+}
+
+type ProjectFinding = {
+    repository: string
+    folder: string
+    summary: string
+    vulnerabilities: VulnerabilityCounts
+}
+
+type VulnerabilityIdentifier = {
+    name: string
+    folder: string
+    count: number
+    time: number
+}
+
+type NotifiedVulnerabilities = {
+    critical: VulnerabilityIdentifier[]
+    high: VulnerabilityIdentifier[]
+    medium: VulnerabilityIdentifier[]
+}
+
+type Expires = {
+    vault: string
+    title: string
+    time: string
+    seen: number
+}
+
+type ExpiresAlert = {
+    hasExpired: Expires[]
+    expiresNextWeek: Expires[]
+    expiresNextMonth: Expires[]
+}
+
+type ProjectReport = {
+    title: string
+    description: string
+    highestSeverity: 'critical' | 'high' | 'medium'
+}
+
+type SecretReport = {
+    ping: boolean
+    red: boolean
+    finalReport: string
+    secretsToReport: boolean
+}
+
+type JobState<T> = {
+    enabled: boolean
+    intervalMinutes: number
+    lastStartedAt: string | null
+    lastFinishedAt: string | null
+    lastSuccessAt: string | null
+    lastError: string | null
+    result: T | null
+}
+
+type Scout = {
+    updatedAt: string | null
+    projectRoot: string
+    projects: JobState<{
+        repositories: string[]
+        findings: ProjectFinding[]
+        notified: NotifiedVulnerabilities
+        report: ProjectReport | null
+        alertSent: boolean
+    }>
+    onePassword: JobState<{
+        categories: ExpiresAlert
+        report: SecretReport | null
+        alertSent: boolean
+        vaultCount: number
+        itemCount: number
+    }>
+}

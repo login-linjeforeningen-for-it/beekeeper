@@ -11,7 +11,7 @@ export const beeswarmSockets = new Map<WS, GPT_SocketState>()
 const CHAT_BEHAVIOR_SYSTEM_PROMPT = [
     'You are the Login AI assistant.',
     'Prefer replying in English by default.',
-    "If the majority of the user's message is in Norwegian, reply in Norwegian.",
+    'If the majority of the user\'s message is in Norwegian, reply in Norwegian.',
     'Only reply in Chinese if the user clearly asks for Chinese.',
     'If the user switches language, follow the same rule again for the newest user message.',
     'Be concise, natural, and helpful.'
@@ -47,7 +47,7 @@ export async function handleMessage(id: string, socket: WS, rawMessage: RawData)
     try {
         const msg = JSON.parse(rawMessage.toString()) as { type?: string, client?: GPT_Client }
         switch (msg.type) {
-            case 'update':
+            case 'update': {
                 if (!msg.client) {
                     return
                 }
@@ -60,6 +60,7 @@ export async function handleMessage(id: string, socket: WS, rawMessage: RawData)
                 })
                 broadcastUpdate(id, socket, normalizedClient)
                 return
+            }
 
             case 'prompt_request':
                 relayPromptRequest(id, socket, msg as GPT_PromptRequest)
@@ -232,23 +233,6 @@ function relayHistoryRequest(
     const clients = beeswarm.get(id)
     if (!clients) {
         return
-    }
-
-    let foundProducer = false
-
-    for (const client of clients) {
-        if (client === requester || client.readyState !== WS.OPEN) {
-            continue
-        }
-
-        const state = beeswarmSockets.get(client)
-        if (state?.role !== 'producer') {
-            continue
-        }
-
-        foundProducer = true
-
-
     }
 
     const target = [...clients].find((client) => {

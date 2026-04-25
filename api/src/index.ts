@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import apiRoutes from './routes.ts'
 import cron from '#utils/cron.ts'
+import { getScout } from '#utils/scouterbee/state.ts'
 import fp from './fp.ts'
 import ws from './plugins/ws.ts'
 import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
@@ -46,9 +47,10 @@ const fastify = Fastify({
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
 fastify.decorate('internalDashboard', Buffer.from(''))
 fastify.decorate('clients', 0)
+fastify.decorate('scout', getScout())
 fastify.decorate('domains', Buffer.from(JSON.stringify({ domains: [] })))
 fastify.decorate('metrics', Buffer.from(JSON.stringify({
-    total_requests: "0",
+    total_requests: '0',
     avg_request_time: 0,
     error_rate: 0,
     top_status_codes: [],
