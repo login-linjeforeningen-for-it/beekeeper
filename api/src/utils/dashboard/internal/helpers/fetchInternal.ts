@@ -5,6 +5,8 @@ export default async function fetchInternal<T>(path: string): Promise<T> {
         headers: {
             Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
             service: 'beekeeper',
+            'x-service': 'beekeeper',
+            'x-internal-service': 'beekeeper',
         },
     })
 

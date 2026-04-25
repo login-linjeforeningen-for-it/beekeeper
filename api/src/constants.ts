@@ -10,7 +10,6 @@ const requiredEnvironmentVariables = [
     'BEEKEEPER_URL',
     'AUTHENTIK_TOKEN',
     'BTG_TOKEN',
-    'INTERNAL_TOKEN',
     'WEBHOOK_URL',
     'CRITICAL_ROLE',
     'CRITICAL_DEVELOPMENT_ROLE',
@@ -31,7 +30,8 @@ if (missingVariables.length > 0) {
 }
 
 const env = Object.fromEntries(
-    requiredEnvironmentVariables.map((key) => [key, process.env[key]])
+    [...requiredEnvironmentVariables, 'INTERNAL_TOKEN', 'BEEKEEPER_TOKEN']
+        .map((key) => [key, process.env[key]])
 )
 
 const AUTH_URL = `${env.BASE_URL}/application/o/authorize/`
@@ -60,7 +60,7 @@ const config = {
     USER_ENDPOINT,
     AUTHENTIK_TOKEN: env.AUTHENTIK_TOKEN,
     BTG_TOKEN: env.BTG_TOKEN,
-    INTERNAL_TOKEN: env.INTERNAL_TOKEN,
+    INTERNAL_TOKEN: env.INTERNAL_TOKEN || env.BEEKEEPER_TOKEN,
     CRITICAL_ROLE: env.CRITICAL_ROLE,
     CRITICAL_DEVELOPMENT_ROLE: env.CRITICAL_DEVELOPMENT_ROLE,
     WEBHOOK_URL: env.WEBHOOK_URL,
