@@ -70,7 +70,7 @@ import {
 export default async function apiRoutes(fastify: FastifyInstance) {
     // index
     fastify.get('/', getIndex)
-    fastify.get('/health', getHealth)
+    fastify.get('/health', { logLevel: 'silent' }, getHealth)
     fastify.get('/version', getVersion)
 
     // user

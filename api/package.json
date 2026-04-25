@@ -1,6 +1,6 @@
 {
   "name": "beekeeper",
-  "version": "3.3.8",
+  "version": "3.3.9",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {

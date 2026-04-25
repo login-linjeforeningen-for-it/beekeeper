@@ -16,9 +16,11 @@ until pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" >/dev/null 2>&1; do
 done
 
 psql \
+    -q \
     -v ON_ERROR_STOP=1 \
     -U "${POSTGRES_USER}" \
     -d "${POSTGRES_DB}" \
-    -f /docker-entrypoint-initdb.d/init.sql
+    -f /docker-entrypoint-initdb.d/init.sql \
+    >/dev/null
 
 wait "$postgres_pid"

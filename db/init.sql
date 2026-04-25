@@ -1,3 +1,5 @@
+SET client_min_messages TO WARNING;
+
 -- Docker containers
 CREATE TABLE IF NOT EXISTS containers (
     id SERIAL PRIMARY KEY,
