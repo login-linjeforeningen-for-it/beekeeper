@@ -7,10 +7,12 @@ import refreshMetrics from './fp/refreshMetrics.ts'
 
 export default fp(async (fastify) => {
     async function refresh() {
-        refreshInternalDashboard(fastify)
-        refreshMonitoring(fastify)
-        refreshDomains(fastify)
-        refreshMetrics(fastify)
+        await Promise.all([
+            refreshInternalDashboard(fastify),
+            refreshMonitoring(fastify),
+            refreshDomains(fastify),
+            refreshMetrics(fastify),
+        ])
         fastify.log.info('Queries refreshed')
     }
 

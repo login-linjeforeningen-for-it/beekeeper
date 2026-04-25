@@ -1,18 +1,10 @@
-import config from '#constants'
+import fetchInternal from './fetchInternal.ts'
 
 export default async function getSystem(): Promise<System> {
     try {
-        const response = await fetch(`${config.internal}/stats/dashboard`)
-        if (!response.ok) {
-            throw new Error(await response.text())
-        }
-
-        const data = await response.json()
-        return data
+        return await fetchInternal<System>('stats/dashboard')
     } catch (error) {
-        if (!isExpectedInternalAuthError(error)) {
-            console.log(error)
-        }
+        console.log(error)
 
         return {
             ram: 'No RAM',
@@ -22,9 +14,4 @@ export default async function getSystem(): Promise<System> {
             containers: 0
         }
     }
-}
-
-function isExpectedInternalAuthError(error: unknown) {
-    return error instanceof Error
-        && error.message.includes('Missing or invalid Authorization header')
 }

@@ -185,11 +185,12 @@ type DetailedService = {
 type InternalDashboard = {
     statistics: InternalDashboardStatistics
     information: InternalDashboardInformation
+    runtime: InternalDashboardRuntime
 }
 
 type InternalDashboardStatistics = {
     alerts: number
-    backups: number
+    databases: number
     sites: number
     monitored: number
     requestsToday: number
@@ -210,6 +211,12 @@ type InternalDashboardInformation = {
     }
 }
 
+type InternalDashboardRuntime = {
+    metrics: Stats
+    docker: Docker
+    databaseOverview: DatabaseOverviewResponse | null
+}
+
 type PrimarySite = {
     id: number
     name: string
@@ -222,6 +229,120 @@ type System = {
     disk: string
     load: string
     containers: number
+}
+
+type Stats = {
+    system: {
+        load: number[]
+        memory: {
+            used: number
+            total: number
+            percent: string
+        }
+        swap: string
+        disk: string
+        temperature: string
+        powerUsage: string
+        processes: number
+        ipv4: string[]
+        ipv6: string[]
+        os: string
+    }
+}
+
+type Docker = {
+    status: 'available' | 'unavailable'
+    count: number
+    containers: DockerContainer[]
+    error?: string | null
+}
+
+type DockerContainer = {
+    id: string
+    name: string
+    status: string
+    project: string
+    deployment: {
+        id: string
+        name: string
+        repoPath: string
+        branch: string
+        serviceUnit: string
+        timerUnit: string
+        autoDeployEnabled: boolean
+        autoDeployActive: boolean
+        serviceActive: boolean
+        updateAvailable: boolean
+        behindCount: number
+        currentCommit: string | null
+        upstreamCommit: string | null
+        dirty: boolean
+        reachable: boolean
+        error: string | null
+    } | null
+}
+
+type DatabaseOverviewAverageQuery = {
+    lastMinute: number | null
+    lastFiveMinutes: number | null
+    lastHour: number | null
+    lastDay: number | null
+}
+
+type DatabaseOverviewQuery = {
+    database: string
+    user: string | null
+    application: string | null
+    ageSeconds: number
+    waitEventType: string | null
+    query: string
+}
+
+type DatabaseOverviewTable = {
+    schema: string
+    name: string
+    estimatedRows: number
+    tableBytes: number
+    indexBytes: number
+    totalBytes: number
+}
+
+type DatabaseOverviewItem = {
+    name: string
+    sizeBytes: number
+    tableCount: number
+    activeQueries: number
+    currentConnections: number
+    longestQuerySeconds: number | null
+    averageQuerySeconds: DatabaseOverviewAverageQuery
+    largestTable: string | null
+    tables: DatabaseOverviewTable[]
+}
+
+type DatabaseOverviewCluster = {
+    id: string
+    name: string
+    project: string
+    status: string
+    databaseCount: number
+    totalSizeBytes: number
+    activeQueries: number
+    currentConnections: number
+    longestQuery: DatabaseOverviewQuery | null
+    averageQuerySeconds: DatabaseOverviewAverageQuery
+    databases: DatabaseOverviewItem[]
+    error: string | null
+}
+
+type DatabaseOverviewResponse = {
+    generatedAt: string
+    clusterCount: number
+    databaseCount: number
+    totalSizeBytes: number
+    activeQueries: number
+    longestQuery: DatabaseOverviewQuery | null
+    averageQuerySeconds: DatabaseOverviewAverageQuery
+    clusters: DatabaseOverviewCluster[]
 }
 
 type GPT_Client = {
