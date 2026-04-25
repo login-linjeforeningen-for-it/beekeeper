@@ -25,10 +25,14 @@ const pool = new Pool({
     connectionTimeoutMillis: Number(DB_TIMEOUT_MS) || 3000
 })
 
+export async function runWithoutRetry(query: string, params?: (string | number | null | boolean)[]) {
+    return await pool.query(query, params ?? [])
+}
+
 export default async function run(query: string, params?: (string | number | null | boolean)[]) {
     while (true) {
         try {
-            return await pool.query(query, params ?? [])
+            return await runWithoutRetry(query, params)
         } catch (error) {
             if (!isRetryableDatabaseError(error)) {
                 throw error
