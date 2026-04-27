@@ -26,13 +26,24 @@ const dockerLogsInflight = new Map<string, Promise<CachedProxyResponse>>()
 const DOCKER_LOGS_REFRESH_MS = 5000
 const DOCKER_LOGS_MAX_STALE_MS = 10 * 60 * 1000
 
-export function getInternalStats(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'stats' })
+type ProxyPath = string | ((req: FastifyRequest) => string)
+type ProxyBody = (req: FastifyRequest) => unknown
+
+function createProxyHandler(path: ProxyPath, options?: {
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    body?: ProxyBody
+}) {
+    return function internalProxyHandler(req: FastifyRequest, res: FastifyReply) {
+        return proxyInternal(req, res, {
+            method: options?.method,
+            path: typeof path === 'function' ? path(req) : path,
+            body: options?.body?.(req),
+        })
+    }
 }
 
-export function getInternalDocker(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'docker' })
-}
+export const getInternalStats = createProxyHandler('stats')
+export const getInternalDocker = createProxyHandler('docker')
 
 export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyReply) {
     const request = getDockerLogsRequest(req)
@@ -57,78 +68,48 @@ export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyRep
     }
 }
 
-export function getInternalDockerContainer(req: FastifyRequest, res: FastifyReply) {
+export const getInternalDockerContainer = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
-    return proxyInternal(req, res, { path: `docker/${id}` })
-}
-
-export function getInternalIngress(req: FastifyRequest, res: FastifyReply) {
+    return `docker/${id}`
+})
+export const getInternalIngress = createProxyHandler((req) => {
     const { port } = req.params as { port: string }
-    return proxyInternal(req, res, { path: `ingress/${port}` })
-}
-
-export function getInternalDb(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'db' })
-}
-
-export function getInternalBackup(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'backup' })
-}
-
-export function postInternalBackup(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, {
-        method: 'POST',
-        path: 'backup',
-        body: req.body ?? {},
-    })
-}
-
-export function getInternalBackupFiles(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'backup/files' })
-}
-
-export function postInternalBackupRestore(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, {
-        method: 'POST',
-        path: 'backup/restore',
-        body: req.body ?? {},
-    })
-}
-
-export function getInternalVulnerabilities(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, { path: 'vulnerabilities' })
-}
-
-export function postInternalVulnerabilityScan(req: FastifyRequest, res: FastifyReply) {
-    return proxyInternal(req, res, {
-        method: 'POST',
-        path: 'vulnerabilities/scan',
-        body: req.body ?? {},
-    })
-}
-
-export function getInternalDeployment(req: FastifyRequest, res: FastifyReply) {
+    return `ingress/${port}`
+})
+export const getInternalDb = createProxyHandler('db')
+export const getInternalBackup = createProxyHandler('backup')
+export const postInternalBackup = createProxyHandler('backup', {
+    method: 'POST',
+    body: (req) => req.body ?? {},
+})
+export const getInternalBackupFiles = createProxyHandler('backup/files')
+export const postInternalBackupRestore = createProxyHandler('backup/restore', {
+    method: 'POST',
+    body: (req) => req.body ?? {},
+})
+export const getInternalVulnerabilities = createProxyHandler('vulnerabilities')
+export const postInternalVulnerabilityScan = createProxyHandler('vulnerabilities/scan', {
+    method: 'POST',
+    body: (req) => req.body ?? {},
+})
+export const getInternalDeployment = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
-    return proxyInternal(req, res, { path: `deployments/${id}` })
-}
-
-export function putInternalDeploymentAuto(req: FastifyRequest, res: FastifyReply) {
+    return `deployments/${id}`
+})
+export const putInternalDeploymentAuto = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
-    return proxyInternal(req, res, {
-        method: 'PUT',
-        path: `deployments/${id}/auto`,
-        body: req.body ?? {},
-    })
-}
-
-export function postInternalDeploymentRun(req: FastifyRequest, res: FastifyReply) {
+    return `deployments/${id}/auto`
+}, {
+    method: 'PUT',
+    body: (req) => req.body ?? {},
+})
+export const postInternalDeploymentRun = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
-    return proxyInternal(req, res, {
-        method: 'POST',
-        path: `deployments/${id}/run`,
-        body: req.body ?? {},
-    })
-}
+    return `deployments/${id}/run`
+}, {
+    method: 'POST',
+    body: (req) => req.body ?? {},
+})
 
 function getDockerLogsRequest(req: FastifyRequest): DockerLogsRequest {
     return {
