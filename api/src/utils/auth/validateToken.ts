@@ -41,7 +41,8 @@ export default async function checkToken( req: FastifyRequest, res: FastifyReply
 
         const userInfo = await userInfoRes.json()
 
-        if (!userInfo.groups || !userInfo.groups.includes('TekKom')) {
+        const groups = Array.isArray(userInfo.groups) ? userInfo.groups : []
+        if (!groups.includes('TekKom') && !groups.includes('queenbee')) {
             return {
                 valid: false,
                 error: 'Unauthorized'

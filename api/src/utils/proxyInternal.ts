@@ -1,5 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import buildInternalUrl from './buildInternalUrl'
+import config from '#constants'
 
 type ProxyOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -13,11 +14,11 @@ export default async function proxyInternal(
     { method = 'GET', path, body }: ProxyOptions
 ) {
     try {
-        const headers: Record<string, string> = {}
-        const authHeader = req.headers.authorization
-
-        if (authHeader) {
-            headers.Authorization = authHeader
+        const headers: Record<string, string> = {
+            Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
+            service: 'beekeeper',
+            'x-service': 'beekeeper',
+            'x-internal-service': 'beekeeper',
         }
 
         if (body !== undefined) {
