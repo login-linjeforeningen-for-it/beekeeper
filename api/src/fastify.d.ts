@@ -10,6 +10,5 @@ declare module 'fastify' {
         domains: Buffer
         metrics: Buffer
         clients: number
-        scout: Scout
     }
 }

@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import proxyInternal from '#utils/proxyInternal.ts'
 import buildInternalUrl from '#utils/buildInternalUrl.ts'
-import config from '#constants'
+import internalHeaders from '#utils/internalHeaders.ts'
 
 type CachedProxyResponse = {
     status: number
@@ -165,16 +165,9 @@ async function refreshDockerLogsCache(cacheKey: string, request: DockerLogsReque
 }
 
 async function fetchDockerLogs(request: DockerLogsRequest): Promise<CachedProxyResponse> {
-    const headers: Record<string, string> = {
-        Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
-        service: 'beekeeper',
-        'x-service': 'beekeeper',
-        'x-internal-service': 'beekeeper',
-    }
-
     const response = await fetch(buildInternalUrl('docker/logs', request.rawUrl), {
         method: 'GET',
-        headers,
+        headers: internalHeaders(),
     })
 
     const contentType = response.headers.get('content-type') || 'application/json'

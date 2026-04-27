@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import buildInternalUrl from './buildInternalUrl'
-import config from '#constants'
+import internalHeaders from './internalHeaders'
 
 type ProxyOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -14,12 +14,7 @@ export default async function proxyInternal(
     { method = 'GET', path, body }: ProxyOptions
 ) {
     try {
-        const headers: Record<string, string> = {
-            Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
-            service: 'beekeeper',
-            'x-service': 'beekeeper',
-            'x-internal-service': 'beekeeper',
-        }
+        const headers = internalHeaders()
 
         if (body !== undefined) {
             headers['Content-Type'] = 'application/json'

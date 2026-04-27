@@ -1,7 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { ensureScout, getScout as getScoutState } from '#utils/scouterbee/state.ts'
+import proxyInternal from '#utils/proxyInternal.ts'
 
-export default async function getScout(_req: FastifyRequest, reply: FastifyReply) {
-    await ensureScout()
-    return reply.send(getScoutState())
+export default async function getScout(req: FastifyRequest, reply: FastifyReply) {
+    return proxyInternal(req, reply, { path: 'scout' })
 }

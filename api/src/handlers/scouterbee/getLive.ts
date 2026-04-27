@@ -1,20 +1,34 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import { on } from 'events'
-import scoutEmitter from '#utils/scouterbee/emitter.ts'
-import { ensureScout, getScout } from '#utils/scouterbee/state.ts'
+import buildInternalUrl from '#utils/buildInternalUrl.ts'
+import internalHeaders from '#utils/internalHeaders.ts'
 
-export default async function getScoutLive(_req: FastifyRequest, reply: FastifyReply) {
-    await ensureScout()
+export default async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
     reply.sse.keepAlive()
-    await reply.sse.send({ event: 'snapshot', data: getScout() })
-
     const controller = new AbortController()
     const cleanup = () => controller.abort()
     reply.sse.onClose(cleanup)
 
     try {
-        for await (const [state] of on(scoutEmitter, 'update', { signal: controller.signal })) {
-            await reply.sse.send({ event: 'update', data: state })
+        let previousPayload = ''
+
+        while (!controller.signal.aborted) {
+            const response = await fetch(buildInternalUrl('scout', req.raw.url), {
+                headers: internalHeaders()
+            })
+
+            const text = await response.text()
+            if (!response.ok) {
+                throw new Error(text || `Internal scout request failed with ${response.status}`)
+            }
+
+            if (text !== previousPayload) {
+                const data = text ? JSON.parse(text) : null
+                const event = previousPayload ? 'update' : 'snapshot'
+                await reply.sse.send({ event, data })
+                previousPayload = text
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 15000))
         }
     } catch (error) {
         if (error && (error as Error).name !== 'AbortError') {

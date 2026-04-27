@@ -5,6 +5,7 @@ export default async function getPrimarySite(): Promise<PrimarySite> {
     return result.rows[0] || {
         id: 0,
         name: 'No sites found.',
-        ip: '0.0.0.0'
+        ip: '0.0.0.0',
+        primary: false
     }
 }

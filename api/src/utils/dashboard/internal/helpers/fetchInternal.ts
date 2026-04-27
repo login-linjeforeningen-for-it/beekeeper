@@ -1,13 +1,9 @@
 import config from '#constants'
+import internalHeaders from '#utils/internalHeaders.ts'
 
 export default async function fetchInternal<T>(path: string): Promise<T> {
     const response = await fetch(`${config.internal}/${path.replace(/^\/+/, '')}`, {
-        headers: {
-            Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
-            service: 'beekeeper',
-            'x-service': 'beekeeper',
-            'x-internal-service': 'beekeeper',
-        },
+        headers: internalHeaders(),
     })
 
     if (!response.ok) {

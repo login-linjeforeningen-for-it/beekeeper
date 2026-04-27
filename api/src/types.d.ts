@@ -201,6 +201,7 @@ type InternalDashboardInformation = {
         id: number
         name: string
         ip: string
+        primary: boolean
     }
     system: {
         ram: string
@@ -221,6 +222,7 @@ type PrimarySite = {
     id: number
     name: string
     ip: string
+    primary: boolean
 }
 
 type System = {
