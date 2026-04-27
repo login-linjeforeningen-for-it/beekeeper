@@ -43,6 +43,32 @@ function normalizeClient(client: GPT_Client): GPT_Client {
     }
 }
 
+export function registerClient(id: string, socket: WS) {
+    if (!beeswarm.has(id)) {
+        beeswarm.set(id, new Set())
+    }
+
+    beeswarm.get(id)!.add(socket)
+    beeswarmSockets.set(socket, {
+        role: 'observer',
+        clientName: null,
+    })
+    broadcastJoin(id)
+}
+
+export function removeClient(id: string, socket: WS) {
+    const clients = beeswarm.get(id)
+    if (!clients) {
+        return
+    }
+
+    clients.delete(socket)
+    beeswarmSockets.delete(socket)
+    if (clients.size === 0) {
+        beeswarm.delete(id)
+    }
+}
+
 export async function handleMessage(id: string, socket: WS, rawMessage: RawData) {
     try {
         const msg = JSON.parse(rawMessage.toString()) as { type?: string, client?: GPT_Client }
@@ -186,6 +212,25 @@ function broadcastUpdate(id: string, sender: WS, client: GPT_Client) {
     for (const clientSocket of clients) {
         if (clientSocket !== sender && clientSocket.readyState === WS.OPEN) {
             clientSocket.send(payload)
+        }
+    }
+}
+
+function broadcastJoin(id: string) {
+    const clients = beeswarm.get(id)
+    if (!clients) {
+        return
+    }
+
+    const payload = JSON.stringify({
+        type: 'join',
+        timestamp: new Date().toISOString(),
+        participants: clients.size
+    })
+
+    for (const client of clients) {
+        if (client.readyState === WS.OPEN) {
+            client.send(payload)
         }
     }
 }

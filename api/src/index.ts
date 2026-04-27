@@ -10,8 +10,8 @@ import fp from './fp.ts'
 import ws from './plugins/ws.ts'
 import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
 
-import getIndexHandler from './handlers/index/getIndex.ts'
-import getFavicon from './handlers/favicon/getFavicon.ts'
+import { getIndex as getIndexHandler } from './handlers/index.ts'
+import { getFavicon } from './handlers/cached.ts'
 
 const port = Number(process.env.PORT) || 8080
 

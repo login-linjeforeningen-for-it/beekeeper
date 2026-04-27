@@ -1,8 +1,13 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import buildInternalUrl from '#utils/buildInternalUrl.ts'
 import internalHeaders from '#utils/internalHeaders.ts'
+import proxyInternal from '#utils/proxyInternal.ts'
 
-export default async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
+export async function getScout(req: FastifyRequest, reply: FastifyReply) {
+    return proxyInternal(req, reply, { path: 'scout' })
+}
+
+export async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
     reply.sse.keepAlive()
     const controller = new AbortController()
     const cleanup = () => controller.abort()

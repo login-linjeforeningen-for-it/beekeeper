@@ -1,8 +1,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
+import tokenWrapper from '#utils/auth/tokenWrapper.ts'
+import discordAlert from '#utils/discordAlert.ts'
 import debug from '#utils/debug.ts'
 
-const { TOKEN_URL, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, USERINFO_URL, beekeeper } = config
+const { TOKEN_URL, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, USERINFO_URL, AUTH_URL, beekeeper } = config
 
 type UserInfo = {
     sub: string
@@ -11,12 +13,20 @@ type UserInfo = {
     groups: string[]
 }
 
-/**
- * Callback route to exchange code for token
- * @param req Request
- * @param res Response
- */
-export default async function getCallback(req: FastifyRequest, res: FastifyReply): Promise<object> {
+export function getLogin(_: FastifyRequest, res: FastifyReply) {
+    const state = Math.random().toString(36).substring(5)
+    const authQueryParams = new URLSearchParams({
+        client_id: CLIENT_ID as string,
+        redirect_uri: REDIRECT_URI as string,
+        response_type: 'code',
+        scope: 'openid profile email',
+        state: state,
+    }).toString()
+
+    res.redirect(`${AUTH_URL}?${authQueryParams}`)
+}
+
+export async function getCallback(req: FastifyRequest, res: FastifyReply): Promise<object> {
     const { code } = req.query as { code: string }
 
     if (!code) {
@@ -24,7 +34,6 @@ export default async function getCallback(req: FastifyRequest, res: FastifyReply
     }
 
     try {
-        // Exchanges callback code for access token
         const tokenResponse = await fetch(TOKEN_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -44,8 +53,6 @@ export default async function getCallback(req: FastifyRequest, res: FastifyReply
         }
 
         const token = JSON.parse(tokenResponseBody)
-
-        // Fetches user info using access token
         const userInfoResponse = await fetch(USERINFO_URL, {
             headers: { Authorization: `Bearer ${token.access_token}` }
         })
@@ -56,7 +63,6 @@ export default async function getCallback(req: FastifyRequest, res: FastifyReply
         }
 
         const userInfo = await userInfoResponse.json() as UserInfo
-
         const redirectUrl = new URL(`${beekeeper}/login`)
         const params = new URLSearchParams({
             id: userInfo.sub,
@@ -73,4 +79,24 @@ export default async function getCallback(req: FastifyRequest, res: FastifyReply
         debug({ basic: `Error during OAuth2 flow: ${error.message}` })
         return res.status(500).send('Authentication failed')
     }
+}
+
+export async function getToken(req: FastifyRequest, res: FastifyReply) {
+    const response = await tokenWrapper(req, res)
+    if (!response.valid) {
+        return res.status(400).send(response)
+    }
+
+    return res.status(200).send(response)
+}
+
+export async function getTokenBTG(req: FastifyRequest, res: FastifyReply) {
+    const response = await tokenWrapper(req, res)
+    if (!response.valid) {
+        discordAlert('A user has failed to access the system using the break-the-glass account. Immediate attention may be required.')
+        return res.status(400).send(response)
+    }
+
+    discordAlert('A user has successfully accessed the system using the break-the-glass account. Immediate attention may be required.')
+    return res.status(200).send(response)
 }

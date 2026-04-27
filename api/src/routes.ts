@@ -2,53 +2,54 @@ import type { FastifyInstance } from 'fastify'
 
 import preHandler from '#utils/auth/middleware.ts'
 
-import getUser from './handlers/user/getUser.ts'
-import getUsers from './handlers/user/getUsers.ts'
-import getLogin from './handlers/login/getLogin.ts'
-import getToken from './handlers/login/getToken.ts'
-import getTokenBTG from './handlers/login/getTokenBTG.ts'
-import getStatus from './handlers/monitoring/get.ts'
-import getCallback from './handlers/login/getCallback.ts'
-import postTraffic from './handlers/traffic/post.ts'
-import getMetrics from './handlers/traffic/getMetrics.ts'
-import getRecords from './handlers/traffic/getRecords.ts'
-import getDomains from './handlers/traffic/getDomains.ts'
-import getLive from './handlers/traffic/getLive.ts'
-import getScout from './handlers/scouterbee/get.ts'
-import getScoutLive from './handlers/scouterbee/getLive.ts'
-import postStatusUpdate from './handlers/monitoring/postUpdate.ts'
-import postService from './handlers/monitoring/post.ts'
-import getIndex from './handlers/index/getIndex.ts'
-import getHealth from './handlers/index/getHealth.ts'
-import getVersion from './handlers/index/getVersion.ts'
-import postStatusNotification from './handlers/monitoring/notification/postNotification.ts'
-import getStatusNotifications from './handlers/monitoring/notification/getNotifications.ts'
-import deleteStatus from './handlers/monitoring/deleteStatus.ts'
-import deleteStatusNotification from './handlers/monitoring/notification/deleteNotification.ts'
-import postTag from './handlers/monitoring/postTag.ts'
-import deleteTag from './handlers/monitoring/deleteTag.ts'
-import getTags from './handlers/monitoring/getTags.ts'
-import deleteSite from './handlers/loadbalancing/deleteSite.ts'
-import getSites from './handlers/loadbalancing/getSites.ts'
-import getPrimarySite from './handlers/loadbalancing/getPrimarySite.ts'
-import setPrimarySite from './handlers/loadbalancing/setPrimarySite.ts'
-import postSite from './handlers/loadbalancing/postSite.ts'
-import putSite from './handlers/loadbalancing/putSite.ts'
-import getService from './handlers/monitoring/getService.ts'
-import putService from './handlers/monitoring/putService.ts'
-import putStatusNotification from './handlers/monitoring/notification/putNotification.ts'
-import getInternalDashboard from './handlers/dashboard/internal/get.ts'
-import getClients from './handlers/ai/getClients.ts'
-import getConversations from './handlers/ai/getConversations.ts'
-import getConversation from './handlers/ai/getConversation.ts'
-import postConversation from './handlers/ai/postConversation.ts'
-import postSwitchConversationClient from './handlers/ai/postSwitchConversationClient.ts'
-import deleteConversation from './handlers/ai/deleteConversation.ts'
-import postRestoreConversation from './handlers/ai/postRestoreConversation.ts'
-import postImportSession from './handlers/ai/postImportSession.ts'
-import postTransferConversation from './handlers/ai/postTransferConversation.ts'
-import postShareConversation from './handlers/ai/postShareConversation.ts'
-import postCopySharedConversation from './handlers/ai/postCopySharedConversation.ts'
+import { getUser, getUsers } from './handlers/users.ts'
+import { getCallback, getLogin, getToken, getTokenBTG } from './handlers/login.ts'
+import {
+    getDomains,
+    getLive,
+    getMetrics,
+    getRecords,
+    postTraffic,
+} from './handlers/traffic.ts'
+import { getScout, getScoutLive } from './handlers/scouterbee.ts'
+import { getHealth, getIndex, getVersion } from './handlers/index.ts'
+import {
+    deleteSite,
+    getPrimarySite,
+    getSites,
+    postSite,
+    putSite,
+    setPrimarySite,
+} from './handlers/loadbalancing/sites.ts'
+import { getInternalDashboard } from './handlers/cached.ts'
+import {
+    deleteConversation,
+    getClients,
+    getConversation,
+    getConversations,
+    postConversation,
+    postCopySharedConversation,
+    postImportSession,
+    postRestoreConversation,
+    postShareConversation,
+    postSwitchConversationClient,
+    postTransferConversation,
+} from './handlers/ai.ts'
+import {
+    deleteStatus,
+    deleteStatusNotification,
+    deleteTag,
+    getService,
+    getStatus,
+    getStatusNotifications,
+    getTags,
+    postService,
+    postStatusNotification,
+    postStatusUpdate,
+    postTag,
+    putService,
+    putStatusNotification,
+} from './handlers/monitoring.ts'
 import {
     getInternalBackup,
     getInternalBackupFiles,
