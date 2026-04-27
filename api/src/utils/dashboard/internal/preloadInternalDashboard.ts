@@ -1,12 +1,14 @@
-import run from '#db'
-import getAlerts from './helpers/getAlerts.ts'
-import getDatabaseOverview from './helpers/getDatabaseOverview.ts'
-import getDatabases from './helpers/getDatabases.ts'
-import getDocker from './helpers/getDocker.ts'
-import getMetrics from './helpers/getMetrics.ts'
-import getPrimarySite from './helpers/getPrimarySite.ts'
-import getRequestsToday from './helpers/getRequestsToday.ts'
-import getSystem from './helpers/getSystem.ts'
+import {
+    countRows,
+    getAlerts,
+    getDatabaseOverview,
+    getDatabases,
+    getDocker,
+    getMetrics,
+    getPrimarySite,
+    getRequestsToday,
+    getSystem,
+} from './sources.ts'
 
 export default async function preloadInternalDashboard(): Promise<InternalDashboard> {
     const [
@@ -51,9 +53,4 @@ export default async function preloadInternalDashboard(): Promise<InternalDashbo
             databaseOverview
         }
     }
-}
-
-async function countRows(table: 'sites' | 'status') {
-    const result = await run(`SELECT * FROM ${table}`)
-    return result.rowCount || 0
 }
