@@ -13,8 +13,7 @@ import monitor from './utils/status/monitor.ts'
 import run from '#db'
 import debug from './utils/debug.ts'
 
-import { getIndex as getIndexHandler } from './handlers/index.ts'
-import { getFavicon } from './handlers/cached.ts'
+import { getFavicon, getIndex as getIndexHandler } from './handlers/system.ts'
 
 const port = Number(process.env.PORT) || 8080
 

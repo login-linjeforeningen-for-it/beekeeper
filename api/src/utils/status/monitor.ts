@@ -1,8 +1,8 @@
 import config from '#constants'
 import run from '#db'
+import debug from '#utils/debug.ts'
 import { loadSQL } from '#utils/query/loadSQL.ts'
-import notify from './notify.ts'
-import checkTcpService from './tcp.ts'
+import net from 'net'
 
 export default async function monitor() {
     const servicesQuery = await loadSQL('fetchServicesWithBars.sql')
@@ -148,6 +148,83 @@ async function recheckTCP(service: DetailedService): Promise<{ status: boolean, 
     }
 
     return { status: false, delay: Date.now() - start }
+}
+
+async function checkTcpService(service: DetailedService): Promise<{ status: boolean, delay: number }> {
+    const start = Date.now()
+
+    return new Promise((resolve) => {
+        const socket = new net.Socket()
+        let finished = false
+
+        const timeout = setTimeout(() => {
+            if (!finished) {
+                finished = true
+                socket.destroy()
+                resolve({ status: false, delay: Date.now() - start })
+            }
+        }, 10000)
+
+        if (service.port) {
+            socket.connect(service.port, service.url, () => {
+                if (!finished) {
+                    finished = true
+                    clearTimeout(timeout)
+                    socket.end()
+                    resolve({ status: true, delay: Date.now() - start })
+                }
+            })
+
+            socket.on('error', () => {
+                if (!finished) {
+                    finished = true
+                    clearTimeout(timeout)
+                    resolve({ status: false, delay: Date.now() - start })
+                }
+            })
+        } else {
+            resolve({ status: false, delay: Date.now() - start })
+        }
+    })
+}
+
+async function notify(service: CheckedServiceStatus) {
+    const delay = Array.isArray(service.bars) && service.bars.length ? service.bars[0].delay : 0
+    try {
+        const data: { content?: string; embeds: object[] } = {
+            embeds: [
+                {
+                    title: `🐝 ${service.name} ${service.bars[0].status ? 'is up.' : 'went down!'}`,
+                    description: `**Service Name**\n${service.name}\n\n${service.url.length ? `**Service URL**\n${service.url}\n\n` : ''}**Service Type**\n${service.type}`,
+                    color: service.bars[0].status ? 0x48a860 : 0xff0000,
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: `Ping ${delay}ms`
+                    }
+                }
+            ]
+        }
+
+        if (service.notification_message) {
+            data.content = service.notification_message
+        }
+
+        const response = await fetch(service.notification_webhook ?? '', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+
+        if (!response.ok) {
+            throw new Error(await response.text())
+        }
+
+        return response.status
+    } catch (error) {
+        debug({ basic: (error as Error) })
+    }
 }
 
 async function runInParallel<T>(

@@ -1,10 +1,19 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
 import { tokenWrapper } from '#utils/auth.ts'
-import discordAlert from '#utils/discordAlert.ts'
 import debug from '#utils/debug.ts'
 
-const { TOKEN_URL, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, USERINFO_URL, AUTH_URL, beekeeper } = config
+const {
+    TOKEN_URL,
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI,
+    USERINFO_URL,
+    AUTH_URL,
+    CRITICAL_ROLE,
+    WEBHOOK_URL,
+    beekeeper,
+} = config
 
 type UserInfo = {
     sub: string
@@ -99,4 +108,39 @@ export async function getTokenBTG(req: FastifyRequest, res: FastifyReply) {
 
     discordAlert('A user has successfully accessed the system using the break-the-glass account. Immediate attention may be required.')
     return res.status(200).send(response)
+}
+
+async function discordAlert(description: string) {
+    try {
+        const data: { content?: string; embeds: object[] } = {
+            embeds: [
+                {
+                    title: '🐝 BeeKeeper BTG Login 🐝',
+                    description,
+                    color: 0xff0000,
+                    timestamp: new Date().toISOString()
+                }
+            ]
+        }
+
+        if (CRITICAL_ROLE) {
+            data.content = `🚨 <@&${CRITICAL_ROLE}> 🚨`
+        }
+
+        const response = await fetch(WEBHOOK_URL ?? '', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+
+        if (!response.ok) {
+            throw new Error(await response.text())
+        }
+
+        return response.status
+    } catch (error) {
+        debug({ basic: (error as Error) })
+    }
 }

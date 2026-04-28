@@ -12,7 +12,7 @@ import {
     postTraffic,
 } from './handlers/traffic.ts'
 import { getScout, getScoutLive } from './handlers/scouterbee.ts'
-import { getHealth, getIndex, getVersion } from './handlers/index.ts'
+import { getHealth, getIndex, getInternalDashboard, getVersion } from './handlers/system.ts'
 import {
     deleteSite,
     getPrimarySite,
@@ -21,7 +21,6 @@ import {
     putSite,
     setPrimarySite,
 } from './handlers/loadbalancing/sites.ts'
-import { getInternalDashboard } from './handlers/cached.ts'
 import {
     deleteConversation,
     getClients,
