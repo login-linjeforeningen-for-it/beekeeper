@@ -42,6 +42,42 @@ function createProxyHandler(path: ProxyPath, options?: {
 
 export const getInternalStats = createProxyHandler('stats')
 export const getInternalDocker = createProxyHandler('docker')
+export const getScout = createProxyHandler('scout')
+
+export async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
+    reply.sse.keepAlive()
+    const controller = new AbortController()
+    const cleanup = () => controller.abort()
+    reply.sse.onClose(cleanup)
+
+    try {
+        let previousPayload = ''
+
+        while (!controller.signal.aborted) {
+            const response = await fetch(buildInternalUrl('scout', req.raw.url), {
+                headers: internalHeaders()
+            })
+
+            const text = await response.text()
+            if (!response.ok) {
+                throw new Error(text || `Internal scout request failed with ${response.status}`)
+            }
+
+            if (text !== previousPayload) {
+                const data = text ? JSON.parse(text) : null
+                const event = previousPayload ? 'update' : 'snapshot'
+                await reply.sse.send({ event, data })
+                previousPayload = text
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 15000))
+        }
+    } catch (error) {
+        if (error && (error as Error).name !== 'AbortError') {
+            throw error
+        }
+    }
+}
 
 export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyReply) {
     const request = getDockerLogsRequest(req)

@@ -1,3 +1,5 @@
+import fp from 'fastify-plugin'
+import type { FastifyInstance, FastifyRequest } from 'fastify'
 import type { RawData } from 'ws'
 import { WebSocket as WS } from 'ws'
 import {
@@ -16,6 +18,24 @@ const CHAT_BEHAVIOR_SYSTEM_PROMPT = [
     'If the user switches language, follow the same rule again for the newest user message.',
     'Be concise, natural, and helpful.'
 ].join(' ')
+
+export default fp(async function wsPlugin(fastify: FastifyInstance) {
+    fastify.get<{ Params: { id: string } }>('/api/client/ws/:id', { websocket: true }, (connection: WS, req: FastifyRequest<{ Params: { id: string } }>) => {
+        const id = (req.params as { id: string}).id
+
+        registerClient(id, connection)
+        fastify.clients = beeswarm.get(id)!.size
+
+        connection.on('message', (message) => {
+            handleMessage(id, connection, message)
+        })
+
+        connection.on('close', () => {
+            fastify.clients = beeswarm.size
+            removeClient(id, connection)
+        })
+    })
+})
 
 function defaultModelMetrics(): GPT_ModelMetrics {
     return {

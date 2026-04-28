@@ -11,7 +11,6 @@ import {
     getRecords,
     postTraffic,
 } from './handlers/traffic.ts'
-import { getScout, getScoutLive } from './handlers/scouterbee.ts'
 import { getHealth, getIndex, getInternalDashboard, getVersion } from './handlers/system.ts'
 import {
     deleteSite,
@@ -58,6 +57,8 @@ import {
     getInternalDockerContainer,
     getInternalDockerLogs,
     getInternalIngress,
+    getScout,
+    getScoutLive,
     getInternalStats,
     getInternalVulnerabilities,
     postInternalBackup,
