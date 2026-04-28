@@ -90,18 +90,15 @@ async function start() {
     }
 }
 
-startCron()
+setTimeout(() => {
+    checkMaxConnections()
+}, 5000)
+
+setInterval(async() => {
+    monitor()
+}, 60000)
+
 start()
-
-function startCron() {
-    setTimeout(() => {
-        checkMaxConnections()
-    }, 5000)
-
-    setInterval(async() => {
-        monitor()
-    }, 60000)
-}
 
 async function checkMaxConnections() {
     try {

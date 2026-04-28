@@ -1,44 +1,28 @@
 import config from '#constants'
 import fp from 'fastify-plugin'
-import type { FastifyInstance } from 'fastify'
 import run, { loadSQL } from '#db'
 import { preloadInternalDashboard } from '#utils/dashboard/internal/sources.ts'
 import { preloadStatus } from '#utils/status/monitor.ts'
 
 export default fp(async (fastify) => {
     async function refresh() {
-        await Promise.all([
-            refreshInternalDashboard(fastify),
-            refreshMonitoring(fastify),
-            refreshDomains(fastify),
-            refreshMetrics(fastify),
+        const [internalDashboard, monitoring, domains, metrics] = await Promise.all([
+            preloadInternalDashboard(),
+            preloadStatus(),
+            preloadDomains(),
+            preloadMetrics(),
         ])
+
+        fastify.internalDashboard = Buffer.from(JSON.stringify(internalDashboard))
+        fastify.monitoring = Buffer.from(JSON.stringify(monitoring))
+        fastify.domains = Buffer.from(JSON.stringify(domains))
+        fastify.metrics = Buffer.from(JSON.stringify(metrics))
         fastify.log.info('Queries refreshed')
     }
 
     refresh()
     setInterval(refresh, config.cache.ttl)
 })
-
-async function refreshInternalDashboard(fastify: FastifyInstance) {
-    const internalDashboard: InternalDashboard = await preloadInternalDashboard()
-    fastify.internalDashboard = Buffer.from(JSON.stringify(internalDashboard))
-}
-
-async function refreshMonitoring(fastify: FastifyInstance) {
-    const monitoring: Monitoring[] = await preloadStatus()
-    fastify.monitoring = Buffer.from(JSON.stringify(monitoring))
-}
-
-async function refreshDomains(fastify: FastifyInstance) {
-    const domains = await preloadDomains()
-    fastify.domains = Buffer.from(JSON.stringify(domains))
-}
-
-async function refreshMetrics(fastify: FastifyInstance) {
-    const metrics = await preloadMetrics()
-    fastify.metrics = Buffer.from(JSON.stringify(metrics))
-}
 
 async function preloadDomains() {
     try {

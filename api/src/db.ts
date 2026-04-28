@@ -45,7 +45,7 @@ export default async function run(query: string, params?: (string | number | nul
             }
             console.log(error)
             debug({ basic: `Pool currently unavailable, retrying in ${config.TIMEOUT_MS / 1000}s...` })
-            await sleep(config.TIMEOUT_MS)
+            await new Promise(res => setTimeout(res, config.TIMEOUT_MS))
         }
     }
 }
@@ -92,8 +92,4 @@ function isRetryableDatabaseError(error: unknown) {
         || message.includes('Connection terminated unexpectedly')
         || message.includes('timeout expired')
         || message.includes('connect ECONNREFUSED')
-}
-
-function sleep(ms: number) {
-    return new Promise(res => setTimeout(res, ms))
 }

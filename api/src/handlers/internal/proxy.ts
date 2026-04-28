@@ -80,8 +80,11 @@ export async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyReply) {
-    const request = getDockerLogsRequest(req)
-    const cacheKey = getDockerLogsCacheKey(request)
+    const request: DockerLogsRequest = {
+        authHeader: req.headers.authorization,
+        rawUrl: req.raw.url || '/docker/logs',
+    }
+    const cacheKey = `${request.authHeader || ''}::${request.rawUrl || '/docker/logs'}`
     const now = Date.now()
     const cached = dockerLogsCache.get(cacheKey)
     if (cached) {
@@ -144,17 +147,6 @@ export const postInternalDeploymentRun = createProxyHandler((req) => {
     method: 'POST',
     body: (req) => req.body ?? {},
 })
-
-function getDockerLogsRequest(req: FastifyRequest): DockerLogsRequest {
-    return {
-        authHeader: req.headers.authorization,
-        rawUrl: req.raw.url || '/docker/logs',
-    }
-}
-
-function getDockerLogsCacheKey(request: DockerLogsRequest) {
-    return `${request.authHeader || ''}::${request.rawUrl || '/docker/logs'}`
-}
 
 async function refreshDockerLogsCache(cacheKey: string, request: DockerLogsRequest) {
     const inflight = dockerLogsInflight.get(cacheKey)
