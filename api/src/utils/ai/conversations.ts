@@ -601,7 +601,10 @@ function buildContinuationSummary(conversation: AiConversationRecord, nextClient
     const transcript = conversation.messages
         .filter((message) => message.role !== 'system')
         .slice(-8)
-        .map((message) => `${capitalize(message.role)}: ${collapseWhitespace(message.content, 500)}`)
+        .map((message) => {
+            const role = message.role.charAt(0).toUpperCase() + message.role.slice(1)
+            return `${role}: ${collapseWhitespace(message.content, 500)}`
+        })
         .join('\n')
 
     const lastAssistantMessage = [...conversation.messages]
@@ -633,10 +636,6 @@ function collapseWhitespace(content: string, maxLength: number) {
     return normalized.length > maxLength
         ? `${normalized.slice(0, maxLength - 3)}...`
         : normalized
-}
-
-function capitalize(value: string) {
-    return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
 function isUuid(value: string) {

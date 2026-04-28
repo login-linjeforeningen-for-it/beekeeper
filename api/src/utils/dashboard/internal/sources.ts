@@ -55,7 +55,7 @@ export async function getAlerts(): Promise<number> {
         }
 
         const data = await response.json()
-        if (!isObject(data) || !('total_count' in data)) {
+        if (!data || typeof data !== 'object' || !('total_count' in data)) {
             throw new Error(`Missing total count: ${JSON.stringify(data)}`)
         }
 
@@ -188,8 +188,4 @@ async function fetchInternal<T>(path: string): Promise<T> {
     }
 
     return await response.json() as T
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null
 }
