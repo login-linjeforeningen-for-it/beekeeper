@@ -2,6 +2,51 @@ import run from '#db'
 import config from '#constants'
 import { internalHeaders } from '#utils/proxyInternal.ts'
 
+export async function preloadInternalDashboard(): Promise<InternalDashboard> {
+    const [
+        alerts,
+        databases,
+        sites,
+        monitored,
+        requestsToday,
+        primarySite,
+        metrics,
+        system,
+        docker,
+        databaseOverview,
+    ] = await Promise.all([
+        getAlerts(),
+        getDatabases(),
+        countRows('sites'),
+        countRows('status'),
+        getRequestsToday(),
+        getPrimarySite(),
+        getMetrics(),
+        getSystem(),
+        getDocker(),
+        getDatabaseOverview(),
+    ])
+
+    return {
+        statistics: {
+            alerts,
+            databases,
+            sites,
+            monitored,
+            requestsToday
+        },
+        information: {
+            primarySite,
+            system
+        },
+        runtime: {
+            metrics,
+            docker,
+            databaseOverview
+        }
+    }
+}
+
 export async function getAlerts(): Promise<number> {
     try {
         const response = await fetch(`${config.workerbee}/alerts`)

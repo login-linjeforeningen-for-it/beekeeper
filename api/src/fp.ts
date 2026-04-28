@@ -2,7 +2,7 @@ import config from '#constants'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
 import run from '#db'
-import preloadInternalDashboard from '#utils/dashboard/internal/preloadInternalDashboard.ts'
+import { preloadInternalDashboard } from '#utils/dashboard/internal/sources.ts'
 import preloadStatus from '#utils/status/preloadStatus.ts'
 import { loadSQL } from '#utils/query/loadSQL.ts'
 
