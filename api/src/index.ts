@@ -4,11 +4,14 @@ import websocket from '@fastify/websocket'
 import Fastify from 'fastify'
 import fs from 'fs'
 import path from 'path'
+import config from '#constants'
 import apiRoutes from './routes.ts'
-import cron from '#utils/cron.ts'
 import fp from './fp.ts'
 import ws from './plugins/ws.ts'
 import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
+import monitor from './utils/status/monitor.ts'
+import run from '#db'
+import debug from './utils/debug.ts'
 
 import { getIndex as getIndexHandler } from './handlers/index.ts'
 import { getFavicon } from './handlers/cached.ts'
@@ -88,5 +91,55 @@ async function start() {
     }
 }
 
-cron()
+startCron()
 start()
+
+function startCron() {
+    setTimeout(() => {
+        checkMaxConnections()
+    }, 5000)
+
+    setInterval(async() => {
+        monitor()
+    }, 60000)
+}
+
+async function checkMaxConnections() {
+    try {
+        const result = await run('SELECT count(*) FROM pg_stat_activity WHERE state=\'active\';')
+        const active = Number(result.rows[0]?.count) || 0
+        const maxRes = await run('SHOW max_connections;')
+        const maxConnections = Number(maxRes.rows[0]?.max_connections) || 0
+        const threshold = Math.floor(maxConnections / 2)
+        const severeThreshold = (maxConnections / 10) * 9
+
+        if (active > threshold && config.WEBHOOK_URL) {
+            console.warn(`Active connections ${active} > ${threshold}, sending Discord alert...`)
+
+            const data: { content?: string; embeds: object[] } = {
+                embeds: [
+                    {
+                        title: '🐝 BeeKeeper Database Max Connections 🐝',
+                        description: `🐝 Many connections detected: ${active.toFixed(2)}/${threshold}.`,
+                        color: 0xff0000,
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            }
+
+            if (active > severeThreshold) {
+                data.content = `🚨 <@&${config.CRITICAL_DEVELOPMENT_ROLE}> 🚨`
+            }
+
+            await fetch(config.WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+        } else {
+            debug({ basic: `Active connections: ${active}` })
+        }
+    } catch (error) {
+        debug({ basic: `checkMaxConnections error: ${error}` })
+    }
+}

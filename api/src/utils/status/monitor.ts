@@ -6,7 +6,7 @@ import checkTcpService from './tcp.ts'
 
 export default async function monitor() {
     const servicesQuery = await loadSQL('fetchServicesWithBars.sql')
-    const servicesResult = await run(servicesQuery)
+    const servicesResult = await run(servicesQuery, [null])
     const active: (DetailedService & { bars: Bar[] })[] = []
     const passive: (DetailedService & { bars: Bar[] })[] = []
     const tcp: (DetailedService & { bars: Bar[] })[] = []

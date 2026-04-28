@@ -1,10 +1,10 @@
 import config from '#constants'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
+import run from '#db'
 import preloadInternalDashboard from '#utils/dashboard/internal/preloadInternalDashboard.ts'
-import preloadDomains from '#utils/traffic/preloadDomains.ts'
-import preloadMetrics from '#utils/traffic/preloadMetrics.ts'
 import preloadStatus from '#utils/status/preloadStatus.ts'
+import { loadSQL } from '#utils/query/loadSQL.ts'
 
 export default fp(async (fastify) => {
     async function refresh() {
@@ -39,4 +39,39 @@ async function refreshDomains(fastify: FastifyInstance) {
 async function refreshMetrics(fastify: FastifyInstance) {
     const metrics = await preloadMetrics()
     fastify.metrics = Buffer.from(JSON.stringify(metrics))
+}
+
+async function preloadDomains() {
+    try {
+        const result = await run('SELECT DISTINCT domain FROM traffic ORDER BY domain')
+        return result.rows.map(row => row.domain)
+    } catch (error) {
+        console.log(error)
+        return []
+    }
+}
+
+async function preloadMetrics() {
+    try {
+        const query = await loadSQL('fetchDefaultMetrics.sql')
+        const result = await run(query)
+
+        return result.rows[0]
+    } catch (error) {
+        console.log(error)
+        return {
+            total_requests: '0',
+            avg_request_time: 0,
+            error_rate: 0,
+            top_status_codes: [],
+            top_methods: [],
+            top_domains: [],
+            top_paths: [],
+            top_slow_paths: [],
+            top_error_paths: [],
+            top_os: [],
+            top_browsers: [],
+            requests_over_time: []
+        }
+    }
 }

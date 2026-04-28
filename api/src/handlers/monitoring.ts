@@ -1,9 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import run from '#db'
-import tokenWrapper from '#utils/auth/tokenWrapper.ts'
+import { tokenWrapper } from '#utils/auth.ts'
 import debug from '#utils/debug.ts'
 import { loadSQL } from '#utils/query/loadSQL.ts'
-import roundToNearestMinute from '#utils/status/roundToNearestMinute.ts'
 
 type ServiceBody = {
     name: string
@@ -205,7 +204,7 @@ export async function postStatusUpdate(req: FastifyRequest, res: FastifyReply) {
     const { delay } = req.query as { delay?: string }
 
     try {
-        const query = await loadSQL('fetchServiceWithBars.sql')
+        const query = await loadSQL('fetchServicesWithBars.sql')
         const result = await run(query, [id])
         if (!result.rowCount) {
             return res.status(404).send({ error: 'No active service found.' })
@@ -388,4 +387,9 @@ function isValidServiceBody(body: {
         && typeof body.expectedDown === 'boolean' && typeof body.upsideDown === 'boolean'
         && typeof body.maxConsecutiveFailures === 'number' && typeof body.enabled === 'boolean'
     )
+}
+
+function roundToNearestMinute(date: Date) {
+    const ms = 1000 * 60
+    return new Date(Math.round(date.getTime() / ms) * ms)
 }

@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
-import tokenWrapper from '#utils/auth/tokenWrapper.ts'
+import { tokenWrapper } from '#utils/auth.ts'
 import discordAlert from '#utils/discordAlert.ts'
 import debug from '#utils/debug.ts'
 

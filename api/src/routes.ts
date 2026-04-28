@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 
-import preHandler from '#utils/auth/middleware.ts'
+import { preHandler } from '#utils/auth.ts'
 
 import { getUser, getUsers } from './handlers/users.ts'
 import { getCallback, getLogin, getToken, getTokenBTG } from './handlers/login.ts'

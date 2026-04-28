@@ -1,6 +1,6 @@
 import run from '#db'
 import config from '#constants'
-import internalHeaders from '#utils/internalHeaders.ts'
+import { internalHeaders } from '#utils/proxyInternal.ts'
 
 export async function getAlerts(): Promise<number> {
     try {

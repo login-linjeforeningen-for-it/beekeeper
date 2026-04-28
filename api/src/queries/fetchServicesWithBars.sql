@@ -24,4 +24,5 @@ LEFT JOIN LATERAL (
         ORDER BY d.timestamp DESC
     ) d
 ) sd ON TRUE
-WHERE s.enabled = TRUE;
+WHERE s.enabled = TRUE
+  AND ($1::int IS NULL OR s.id = $1);

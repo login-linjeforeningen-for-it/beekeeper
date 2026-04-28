@@ -1,6 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import buildInternalUrl from './buildInternalUrl'
-import internalHeaders from './internalHeaders'
+import config from '#constants'
 
 type ProxyOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -46,4 +45,21 @@ export default async function proxyInternal(
             error: error instanceof Error ? error.message : 'Failed to reach internal API'
         })
     }
+}
+
+export function buildInternalUrl(path: string, rawUrl?: string) {
+    const base = config.internal.replace(/\/$/, '')
+    const query = rawUrl?.split('?')[1]
+    return `${base}/${path}${query ? `?${query}` : ''}`
+}
+
+export function internalHeaders(extraHeaders?: Record<string, string>) {
+    const headers: Record<string, string> = {
+        Authorization: `Bearer ${config.INTERNAL_TOKEN}`,
+        service: 'beekeeper',
+        'x-service': 'beekeeper',
+        'x-internal-service': 'beekeeper',
+    }
+
+    return extraHeaders ? { ...headers, ...extraHeaders } : headers
 }

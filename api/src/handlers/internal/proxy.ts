@@ -1,7 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
-import proxyInternal from '#utils/proxyInternal.ts'
-import buildInternalUrl from '#utils/buildInternalUrl.ts'
-import internalHeaders from '#utils/internalHeaders.ts'
+import proxyInternal, { buildInternalUrl, internalHeaders } from '#utils/proxyInternal.ts'
 
 type CachedProxyResponse = {
     status: number

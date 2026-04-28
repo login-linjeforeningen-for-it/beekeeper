@@ -1,7 +1,6 @@
 import tls from 'node:tls'
 import { X509Certificate } from 'node:crypto'
 import { URL } from 'node:url'
-import classifyKeyType from './classifyKeyType.ts'
 
 export async function getCertificateDetails(
     service: MonitoredService
@@ -168,4 +167,38 @@ function normalizeIssuerCertificate(cert: tls.DetailedPeerCertificate): object {
         asn1Curve: cert.asn1Curve ?? '',
         nistCurve: cert.nistCurve ?? ''
     }
+}
+
+function classifyKeyType(cert: tls.DetailedPeerCertificate) {
+    const certificate = cert as tls.DetailedPeerCertificate & {
+        publicKeyAlgorithm?: string
+        signatureAlgorithm?: string
+    }
+    const algo = certificate.publicKeyAlgorithm?.toLowerCase() || ''
+    const curve = certificate.asn1Curve || certificate.nistCurve || ''
+
+    let keyType: string
+    if (algo.includes('ecdsa') || curve) {
+        keyType = 'ECDSA'
+    } else {
+        keyType = 'RSA'
+    }
+
+    let hash = 'SHA-256'
+    if (certificate.signatureAlgorithm) {
+        const sig = certificate.signatureAlgorithm.toLowerCase()
+        if (sig.includes('sha256')) {
+            hash = 'SHA-256'
+        } else if (sig.includes('sha384')) {
+            hash = 'SHA-384'
+        } else if (sig.includes('sha512')) {
+            hash = 'SHA-512'
+        } else if (sig.includes('sha1')) {
+            hash = 'SHA-1'
+        }
+    } else if (keyType === 'RSA') {
+        hash = 'SHA-256'
+    }
+
+    return `${keyType} signature with ${hash}`
 }

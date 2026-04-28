@@ -1,9 +1,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { on } from 'events'
+import { EventEmitter } from 'events'
 import run, { runWithoutRetry } from '#db'
 import config from '#constants'
 import debug from '#utils/debug.ts'
-import trafficEmitter from '#utils/trafficEmitter.ts'
 
 type GetMetricsParams = {
     time_start?: string
@@ -43,6 +43,7 @@ type TrafficRecord = {
 const TRAFFIC_BATCH_SIZE = 250
 const TRAFFIC_QUEUE_LIMIT = 10000
 const TRAFFIC_RETRY_MS = 1000
+const trafficEmitter = new EventEmitter()
 
 let trafficQueue: TrafficRecord[] = []
 let isFlushingTraffic = false

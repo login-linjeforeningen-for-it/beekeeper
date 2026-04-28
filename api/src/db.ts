@@ -1,6 +1,5 @@
 import pg from 'pg'
 import config from '#constants'
-import sleep from '#utils/sleep.ts'
 import debug from '#utils/debug.ts'
 
 const {
@@ -86,4 +85,8 @@ function isRetryableDatabaseError(error: unknown) {
         || message.includes('Connection terminated unexpectedly')
         || message.includes('timeout expired')
         || message.includes('connect ECONNREFUSED')
+}
+
+function sleep(ms: number) {
+    return new Promise(res => setTimeout(res, ms))
 }
