@@ -22,16 +22,16 @@ import {
 } from './handlers/loadbalancing/sites.ts'
 import {
     deleteConversation,
+    copySharedConversation,
     getClients,
     getConversation,
     getConversations,
+    importSession,
     postConversation,
-    postCopySharedConversation,
-    postImportSession,
-    postRestoreConversation,
-    postShareConversation,
-    postSwitchConversationClient,
-    postTransferConversation,
+    restoreConversation,
+    shareConversation,
+    switchClient,
+    transferConversation,
 } from './handlers/ai.ts'
 import {
     deleteStatus,
@@ -49,23 +49,23 @@ import {
     putStatusNotification,
 } from './handlers/monitoring.ts'
 import {
-    getInternalBackup,
-    getInternalBackupFiles,
-    getInternalDb,
-    getInternalDeployment,
-    getInternalDocker,
-    getInternalDockerContainer,
-    getInternalDockerLogs,
-    getInternalIngress,
+    getBackup,
+    getBackupFiles,
+    getDb,
+    getDeployment,
+    getDocker,
+    getDockerContainer,
+    getDockerLogs,
+    getIngress,
     getScout,
     getScoutLive,
-    getInternalStats,
-    getInternalVulnerabilities,
-    postInternalBackup,
-    postInternalBackupRestore,
-    postInternalDeploymentRun,
-    postInternalVulnerabilityScan,
-    putInternalDeploymentAuto,
+    getStats,
+    getVulnerabilities,
+    postBackup,
+    restoreBackup,
+    runDeployment,
+    scanVulnerabilities,
+    setDeploymentAuto,
 } from './handlers/internal/proxy.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
@@ -129,31 +129,31 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/ai/conversations', getConversations)
     fastify.get('/ai/conversations/:id', getConversation)
     fastify.post('/ai/conversations', postConversation)
-    fastify.post('/ai/conversations/import-session', postImportSession)
-    fastify.post('/ai/conversations/:id/restore', postRestoreConversation)
-    fastify.post('/ai/conversations/:id/transfer', postTransferConversation)
-    fastify.post('/ai/conversations/:id/share', postShareConversation)
-    fastify.post('/ai/conversations/:id/switch-client', postSwitchConversationClient)
-    fastify.post('/ai/shared/:token/copy', postCopySharedConversation)
+    fastify.post('/ai/conversations/import-session', importSession)
+    fastify.post('/ai/conversations/:id/restore', restoreConversation)
+    fastify.post('/ai/conversations/:id/transfer', transferConversation)
+    fastify.post('/ai/conversations/:id/share', shareConversation)
+    fastify.post('/ai/conversations/:id/switch-client', switchClient)
+    fastify.post('/ai/shared/:token/copy', copySharedConversation)
     fastify.delete('/ai/conversations/:id', deleteConversation)
 
     // internal dashboard
     fastify.get('/dashboard/internal', getInternalDashboard)
 
     // internal api proxy
-    fastify.get('/stats', { preHandler }, getInternalStats)
-    fastify.get('/docker', { preHandler }, getInternalDocker)
-    fastify.get('/docker/logs', { preHandler }, getInternalDockerLogs)
-    fastify.get('/docker/:id', { preHandler }, getInternalDockerContainer)
-    fastify.get('/ingress/:port', { preHandler }, getInternalIngress)
-    fastify.get('/db', { preHandler }, getInternalDb)
-    fastify.get('/backup', { preHandler }, getInternalBackup)
-    fastify.post('/backup', { preHandler }, postInternalBackup)
-    fastify.get('/backup/files', { preHandler }, getInternalBackupFiles)
-    fastify.post('/backup/restore', { preHandler }, postInternalBackupRestore)
-    fastify.get('/vulnerabilities', { preHandler }, getInternalVulnerabilities)
-    fastify.post('/vulnerabilities/scan', { preHandler }, postInternalVulnerabilityScan)
-    fastify.get('/deployments/:id', { preHandler }, getInternalDeployment)
-    fastify.put('/deployments/:id/auto', { preHandler }, putInternalDeploymentAuto)
-    fastify.post('/deployments/:id/run', { preHandler }, postInternalDeploymentRun)
+    fastify.get('/stats', { preHandler }, getStats)
+    fastify.get('/docker', { preHandler }, getDocker)
+    fastify.get('/docker/logs', { preHandler }, getDockerLogs)
+    fastify.get('/docker/:id', { preHandler }, getDockerContainer)
+    fastify.get('/ingress/:port', { preHandler }, getIngress)
+    fastify.get('/db', { preHandler }, getDb)
+    fastify.get('/backup', { preHandler }, getBackup)
+    fastify.post('/backup', { preHandler }, postBackup)
+    fastify.get('/backup/files', { preHandler }, getBackupFiles)
+    fastify.post('/backup/restore', { preHandler }, restoreBackup)
+    fastify.get('/vulnerabilities', { preHandler }, getVulnerabilities)
+    fastify.post('/vulnerabilities/scan', { preHandler }, scanVulnerabilities)
+    fastify.get('/deployments/:id', { preHandler }, getDeployment)
+    fastify.put('/deployments/:id/auto', { preHandler }, setDeploymentAuto)
+    fastify.post('/deployments/:id/run', { preHandler }, runDeployment)
 }

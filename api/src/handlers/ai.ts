@@ -79,7 +79,7 @@ export async function postConversation(
     res.code(201).type('application/json').send(conversation)
 }
 
-export async function postSwitchConversationClient(
+export async function switchClient(
     req: FastifyRequest<{ Params: { id: string }, Body: ClientBody }>,
     res: FastifyReply
 ) {
@@ -118,7 +118,7 @@ export async function deleteConversation(
     res.code(204).send()
 }
 
-export async function postRestoreConversation(
+export async function restoreConversation(
     req: FastifyRequest<{ Params: { id: string } }>,
     res: FastifyReply
 ) {
@@ -134,7 +134,7 @@ export async function postRestoreConversation(
     res.code(204).send()
 }
 
-export async function postImportSession(
+export async function importSession(
     req: FastifyRequest<{ Body: ImportSessionBody }>,
     res: FastifyReply
 ) {
@@ -156,7 +156,7 @@ export async function postImportSession(
     res.code(204).send()
 }
 
-export async function postTransferConversation(
+export async function transferConversation(
     req: FastifyRequest<{ Params: { id: string }, Body: TransferBody }>,
     res: FastifyReply
 ) {
@@ -178,7 +178,7 @@ export async function postTransferConversation(
     res.code(204).send()
 }
 
-export async function postShareConversation(
+export async function shareConversation(
     req: FastifyRequest<{ Params: { id: string } }>,
     res: FastifyReply
 ) {
@@ -194,7 +194,7 @@ export async function postShareConversation(
     res.type('application/json').send({ shareToken })
 }
 
-export async function postCopySharedConversation(
+export async function copySharedConversation(
     req: FastifyRequest<{ Params: { token: string } }>,
     res: FastifyReply
 ) {

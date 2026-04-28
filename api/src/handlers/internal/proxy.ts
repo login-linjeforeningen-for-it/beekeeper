@@ -40,8 +40,8 @@ function createProxyHandler(path: ProxyPath, options?: {
     }
 }
 
-export const getInternalStats = createProxyHandler('stats')
-export const getInternalDocker = createProxyHandler('docker')
+export const getStats = createProxyHandler('stats')
+export const getDocker = createProxyHandler('docker')
 export const getScout = createProxyHandler('scout')
 
 export async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
@@ -79,7 +79,7 @@ export async function getScoutLive(req: FastifyRequest, reply: FastifyReply) {
     }
 }
 
-export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyReply) {
+export async function getDockerLogs(req: FastifyRequest, res: FastifyReply) {
     const request: DockerLogsRequest = {
         authHeader: req.headers.authorization,
         rawUrl: req.raw.url || '/docker/logs',
@@ -105,42 +105,42 @@ export async function getInternalDockerLogs(req: FastifyRequest, res: FastifyRep
     }
 }
 
-export const getInternalDockerContainer = createProxyHandler((req) => {
+export const getDockerContainer = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
     return `docker/${id}`
 })
-export const getInternalIngress = createProxyHandler((req) => {
+export const getIngress = createProxyHandler((req) => {
     const { port } = req.params as { port: string }
     return `ingress/${port}`
 })
-export const getInternalDb = createProxyHandler('db')
-export const getInternalBackup = createProxyHandler('backup')
-export const postInternalBackup = createProxyHandler('backup', {
+export const getDb = createProxyHandler('db')
+export const getBackup = createProxyHandler('backup')
+export const postBackup = createProxyHandler('backup', {
     method: 'POST',
     body: (req) => req.body ?? {},
 })
-export const getInternalBackupFiles = createProxyHandler('backup/files')
-export const postInternalBackupRestore = createProxyHandler('backup/restore', {
+export const getBackupFiles = createProxyHandler('backup/files')
+export const restoreBackup = createProxyHandler('backup/restore', {
     method: 'POST',
     body: (req) => req.body ?? {},
 })
-export const getInternalVulnerabilities = createProxyHandler('vulnerabilities')
-export const postInternalVulnerabilityScan = createProxyHandler('vulnerabilities/scan', {
+export const getVulnerabilities = createProxyHandler('vulnerabilities')
+export const scanVulnerabilities = createProxyHandler('vulnerabilities/scan', {
     method: 'POST',
     body: (req) => req.body ?? {},
 })
-export const getInternalDeployment = createProxyHandler((req) => {
+export const getDeployment = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
     return `deployments/${id}`
 })
-export const putInternalDeploymentAuto = createProxyHandler((req) => {
+export const setDeploymentAuto = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
     return `deployments/${id}/auto`
 }, {
     method: 'PUT',
     body: (req) => req.body ?? {},
 })
-export const postInternalDeploymentRun = createProxyHandler((req) => {
+export const runDeployment = createProxyHandler((req) => {
     const { id } = req.params as { id: string }
     return `deployments/${id}/run`
 }, {
