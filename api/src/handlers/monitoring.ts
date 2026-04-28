@@ -1,8 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import run from '#db'
+import run, { loadSQL } from '#db'
 import { tokenWrapper } from '#utils/auth.ts'
 import debug from '#utils/debug.ts'
-import { loadSQL } from '#utils/query/loadSQL.ts'
 
 type ServiceBody = {
     name: string

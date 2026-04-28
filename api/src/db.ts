@@ -1,4 +1,6 @@
 import pg from 'pg'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 import config from '#constants'
 import debug from '#utils/debug.ts'
 
@@ -26,6 +28,11 @@ const pool = new Pool({
 
 export async function runWithoutRetry(query: string, params?: (string | number | null | boolean)[]) {
     return await pool.query(query, params ?? [])
+}
+
+export async function loadSQL(file: string) {
+    const filePath = join(process.cwd(), 'src/queries', file)
+    return readFile(filePath, 'utf-8')
 }
 
 export default async function run(query: string, params?: (string | number | null | boolean)[]) {

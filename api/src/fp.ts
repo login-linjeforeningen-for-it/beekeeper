@@ -1,10 +1,9 @@
 import config from '#constants'
 import fp from 'fastify-plugin'
 import type { FastifyInstance } from 'fastify'
-import run from '#db'
+import run, { loadSQL } from '#db'
 import { preloadInternalDashboard } from '#utils/dashboard/internal/sources.ts'
-import preloadStatus from '#utils/status/preloadStatus.ts'
-import { loadSQL } from '#utils/query/loadSQL.ts'
+import { preloadStatus } from '#utils/status/monitor.ts'
 
 export default fp(async (fastify) => {
     async function refresh() {
