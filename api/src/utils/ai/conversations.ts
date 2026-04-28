@@ -184,7 +184,7 @@ export async function restoreAiConversation(conversationId: string, owner: AiCon
     return restored
 }
 
-export async function transferAiConversationToUser(
+export async function transferConversation(
     conversationId: string,
     owner: AiConversationOwner,
     nextUserId: string
@@ -208,7 +208,7 @@ export async function transferAiConversationToUser(
     return transferred
 }
 
-export async function importAiConversationsFromSession(userId: string, sessionId: string) {
+export async function importSession(userId: string, sessionId: string) {
     const result = await run(`
         UPDATE ai_conversations
         SET owner_user_id = $1, owner_session_id = NULL, updated_at = NOW()
@@ -224,7 +224,7 @@ export async function importAiConversationsFromSession(userId: string, sessionId
     return imported
 }
 
-export async function createAiConversationShare(conversationId: string, owner: AiConversationOwner) {
+export async function shareConversation(conversationId: string, owner: AiConversationOwner) {
     if (!isUuid(conversationId)) {
         return null
     }
@@ -246,7 +246,7 @@ export async function createAiConversationShare(conversationId: string, owner: A
     return nextShareToken
 }
 
-export async function copySharedAiConversation(shareToken: string, owner: AiConversationOwner) {
+export async function copySharedConversation(shareToken: string, owner: AiConversationOwner) {
     if (!isUuid(shareToken)) {
         return null
     }
@@ -398,7 +398,7 @@ export async function persistAssistantResponse({
     })
 }
 
-export async function switchAiConversationClient(
+export async function switchClient(
     conversationId: string,
     nextClientName: string,
     owner: AiConversationOwner
@@ -513,7 +513,7 @@ async function maybeImportOwnerSession(owner: AiConversationOwner) {
     importedOwnerKeys.set(key, now)
 
     try {
-        await importAiConversationsFromSession(owner.userId, owner.sessionId)
+        await importSession(owner.userId, owner.sessionId)
     } catch (error) {
         importedOwnerKeys.delete(key)
         throw error

@@ -1,15 +1,15 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import {
-    copySharedAiConversation,
+    copySharedConversation as copyShared,
     createAiConversation,
-    createAiConversationShare,
     deleteAiConversation,
     getAiConversation,
-    importAiConversationsFromSession,
+    importSession as importOwnerSession,
     listAiConversations,
     restoreAiConversation,
-    switchAiConversationClient,
-    transferAiConversationToUser,
+    shareConversation as createShare,
+    switchClient as switchConversationClient,
+    transferConversation as transferToUser,
 } from '#utils/ai/conversations.ts'
 import { resolveAiOwner } from '#utils/ai/owner.ts'
 
@@ -92,7 +92,7 @@ export async function switchClient(
         return
     }
 
-    const conversation = await switchAiConversationClient(req.params.id, clientName, owner)
+    const conversation = await switchConversationClient(req.params.id, clientName, owner)
 
     if (!conversation) {
         res.code(404).type('application/json').send({ error: 'Conversation not found.' })
@@ -152,7 +152,7 @@ export async function importSession(
         return
     }
 
-    await importAiConversationsFromSession(owner.userId, sessionId)
+    await importOwnerSession(owner.userId, sessionId)
     res.code(204).send()
 }
 
@@ -169,7 +169,7 @@ export async function transferConversation(
         return
     }
 
-    const transferred = await transferAiConversationToUser(req.params.id, owner, nextUserId)
+    const transferred = await transferToUser(req.params.id, owner, nextUserId)
     if (!transferred) {
         res.code(404).type('application/json').send({ error: 'Conversation not found.' })
         return
@@ -184,7 +184,7 @@ export async function shareConversation(
 ) {
     setAiResponseHeaders(res)
     const owner = await resolveAiOwner(req)
-    const shareToken = await createAiConversationShare(req.params.id, owner)
+    const shareToken = await createShare(req.params.id, owner)
 
     if (!shareToken) {
         res.code(404).type('application/json').send({ error: 'Conversation not found.' })
@@ -200,7 +200,7 @@ export async function copySharedConversation(
 ) {
     setAiResponseHeaders(res)
     const owner = await resolveAiOwner(req)
-    const conversation = await copySharedAiConversation(req.params.token, owner)
+    const conversation = await copyShared(req.params.token, owner)
 
     if (!conversation) {
         res.code(404).type('application/json').send({ error: 'Shared conversation not found.' })
