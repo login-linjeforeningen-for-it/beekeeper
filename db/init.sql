@@ -51,6 +51,10 @@ INSERT INTO status (name, type, url, notification, interval, expected_down, upsi
 SELECT 'Spaces', 'fetch', 'https://spaces.login.no/', 4, 60, FALSE, FALSE, 0, 'spaces.login.no', TRUE, 403
 WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = 'Spaces');
 
+INSERT INTO status (name, type, url, notification, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, expected_status)
+SELECT 'Wiki.js', 'fetch', 'https://wikijs.login.no', 2, 60, FALSE, FALSE, 0, 'wikijs.login.no', TRUE, NULL
+WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = 'Wiki.js');
+
 CREATE TABLE IF NOT EXISTS status_details (
     id SERIAL PRIMARY KEY,
     service_id INTEGER REFERENCES status(id) ON DELETE CASCADE,
