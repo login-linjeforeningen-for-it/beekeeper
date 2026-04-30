@@ -30,4 +30,4 @@ TRAFFIC_SECRET
 This is the API for Beekeeper. BeeKeeper is a subsystem of QueenBee. It previously shipped its own frontend, but this has since been moved to QueenBee.
 
 ## Current status
-![Current Status](https://cdn.login.no/img/beekeeper/beekeeper_initial.png)
+![Current Status](https://s3.login.no/beehive/img/beekeeper/beekeeper_initial.png)
