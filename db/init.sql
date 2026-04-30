@@ -51,6 +51,12 @@ INSERT INTO status (name, type, url, notification, interval, expected_down, upsi
 SELECT 'Spaces', 'fetch', 'https://spaces.login.no/', 4, 60, FALSE, FALSE, 0, 'spaces.login.no', TRUE, 403
 WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = 'Spaces');
 
+UPDATE status
+SET notification = 2
+WHERE name = 'Wiki'
+  AND url LIKE '%wiki.login.no%'
+  AND notification = 3;
+
 CREATE TABLE IF NOT EXISTS status_details (
     id SERIAL PRIMARY KEY,
     service_id INTEGER REFERENCES status(id) ON DELETE CASCADE,
