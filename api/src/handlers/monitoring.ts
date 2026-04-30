@@ -12,6 +12,7 @@ type ServiceBody = {
     expectedDown: boolean
     upsideDown: boolean
     userAgent?: string
+    expectedStatus?: number | null
     maxConsecutiveFailures: number
     note: string
     enabled: boolean
@@ -57,6 +58,7 @@ export async function getService(req: FastifyRequest, res: FastifyReply) {
             expectedDown: row.expected_down,
             upsideDown: row.upside_down,
             userAgent: row.user_agent,
+            expectedStatus: row.expected_status,
             maxConsecutiveFailures: row.max_consecutive_failures,
             note: row.note,
             notified: row.notified,
@@ -74,7 +76,7 @@ export async function getService(req: FastifyRequest, res: FastifyReply) {
 export async function postService(req: FastifyRequest, res: FastifyReply) {
     const {
         name, type, url, interval, expectedDown, upsideDown, userAgent, port,
-        maxConsecutiveFailures, note, enabled, notification
+        expectedStatus, maxConsecutiveFailures, note, enabled, notification
     } = req.body as ServiceBody || {}
     const { valid } = await tokenWrapper(req, res)
     if (!valid) {
@@ -92,18 +94,20 @@ export async function postService(req: FastifyRequest, res: FastifyReply) {
             interval=${interval}, expected_down=${expectedDown},
             upside_down=${upsideDown}, port=${port},
             max_consecutive_failures=${maxConsecutiveFailures}, note=${note}, 
-            enabled=${enabled}, notification=${notification}, user_agent=${userAgent}
+            enabled=${enabled}, notification=${notification}, user_agent=${userAgent},
+            expected_status=${expectedStatus}
         ` })
 
         const result = await run(
-            `INSERT INTO status (name, type, url, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, notification, user_agent, port) 
-             SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+            `INSERT INTO status (name, type, url, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, notification, user_agent, port, expected_status) 
+             SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
              WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = $1)
              RETURNING id, name;`,
             [
                 name, type, url, interval, expectedDown, upsideDown,
                 maxConsecutiveFailures, note || null, enabled,
-                Number(notification) || null, userAgent || null, port || null
+                Number(notification) || null, userAgent || null, port || null,
+                normalizeExpectedStatus(expectedStatus)
             ]
         )
 
@@ -125,7 +129,7 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
     const {
         name, type, url, interval, expectedDown, upsideDown, userAgent, port,
-        maxConsecutiveFailures, note, enabled, notification
+        expectedStatus, maxConsecutiveFailures, note, enabled, notification
     } = req.body as ServiceBody || {}
     const { valid } = await tokenWrapper(req, res)
     if (!valid) {
@@ -143,7 +147,8 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
             interval=${interval}, expected_down=${expectedDown}, 
             upside_down=${upsideDown}, port=${port},
             max_consecutive_failures=${maxConsecutiveFailures}, note=${note}, 
-            enabled=${enabled}, notification=${notification}, user_agent=${userAgent}
+            enabled=${enabled}, notification=${notification}, user_agent=${userAgent},
+            expected_status=${expectedStatus}
         ` })
 
         const result = await run(
@@ -161,14 +166,16 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
                 enabled = $9,
                 notification = $10,
                 user_agent = $12,
-                port = $13
+                port = $13,
+                expected_status = $14
             WHERE id = $11
             RETURNING id
             `,
             [
                 name, type, url, interval, expectedDown, upsideDown,
                 maxConsecutiveFailures, note, enabled,
-                Number(notification) || null, id, userAgent || null, port || null
+                Number(notification) || null, id, userAgent || null, port || null,
+                normalizeExpectedStatus(expectedStatus)
             ]
         )
 
@@ -386,6 +393,19 @@ function isValidServiceBody(body: {
         && typeof body.expectedDown === 'boolean' && typeof body.upsideDown === 'boolean'
         && typeof body.maxConsecutiveFailures === 'number' && typeof body.enabled === 'boolean'
     )
+}
+
+function normalizeExpectedStatus(value: number | null | undefined) {
+    if (value === null || value === undefined || value === 0) {
+        return null
+    }
+
+    const status = Number(value)
+    if (!Number.isInteger(status) || status < 100 || status > 599) {
+        return null
+    }
+
+    return status
 }
 
 function roundToNearestMinute(date: Date) {

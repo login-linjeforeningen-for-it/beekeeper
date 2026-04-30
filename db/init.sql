@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS status (
     expected_down BOOLEAN NOT NULL DEFAULT FALSE,
     upside_down BOOLEAN NOT NULL DEFAULT FALSE,
     user_agent TEXT,
+    expected_status INTEGER,
     max_consecutive_failures INTEGER NOT NULL DEFAULT 0,
     note TEXT,
     notified TIMESTAMPTZ,
@@ -41,6 +42,14 @@ CREATE TABLE IF NOT EXISTS status (
     port INTEGER,
     enabled BOOLEAN NOT NULL DEFAULT TRUE
 );
+
+INSERT INTO status (name, type, url, notification, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, expected_status)
+SELECT 'S3', 'fetch', 'https://s3.login.no/', 4, 60, FALSE, FALSE, 0, 's3.login.no', TRUE, 403
+WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = 'S3');
+
+INSERT INTO status (name, type, url, notification, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, expected_status)
+SELECT 'Spaces', 'fetch', 'https://spaces.login.no/', 4, 60, FALSE, FALSE, 0, 'spaces.login.no', TRUE, 403
+WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = 'Spaces');
 
 CREATE TABLE IF NOT EXISTS status_details (
     id SERIAL PRIMARY KEY,

@@ -38,6 +38,7 @@ type MonitoredService = {
     expected_down: boolean
     upside_down: boolean
     user_agent: string | null
+    expected_status: number | null
     max_consecutive_failures: number
     note: string | null
     notified: string
@@ -176,6 +177,7 @@ type DetailedService = {
     expected_down: boolean
     upside_down: boolean
     user_agent: string | null
+    expected_status: number | null
     interval: number
     note: string
     max_consecutive_failures: number

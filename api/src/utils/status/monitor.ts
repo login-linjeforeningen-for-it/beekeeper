@@ -310,6 +310,11 @@ async function fetchService(service: DetailedService): Promise<{ status: boolean
         })
 
         const delay = getMonitorDelay(response) ?? new Date().getTime() - start
+        const expectedStatus = service.expected_status
+
+        if (expectedStatus) {
+            return { status: response.status === expectedStatus, delay }
+        }
 
         if (!response.ok) {
             return { status: false, delay }
