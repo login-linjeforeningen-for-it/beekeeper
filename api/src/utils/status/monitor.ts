@@ -309,15 +309,31 @@ async function fetchService(service: DetailedService): Promise<{ status: boolean
             headers
         })
 
+        const delay = getMonitorDelay(response) ?? new Date().getTime() - start
+
         if (!response.ok) {
-            return { status: false, delay: new Date().getTime() - start }
+            return { status: false, delay }
         }
 
-        return { status: true, delay: new Date().getTime() - start }
+        return { status: true, delay }
     } catch (error) {
         console.log(`Monitor error for service ${service.name}: ${error}`)
         return { status: false, delay: new Date().getTime() - start }
     } finally {
         clearTimeout(timeout)
     }
+}
+
+function getMonitorDelay(response: Response) {
+    const value = response.headers.get('x-monitor-delay-ms')
+    if (!value) {
+        return null
+    }
+
+    const delay = Number(value)
+    if (!Number.isFinite(delay) || delay < 0) {
+        return null
+    }
+
+    return Math.round(delay)
 }
