@@ -33,10 +33,11 @@ export async function preloadStatus(): Promise<Monitoring[]> {
             domainInfo = temp
         }
 
-        const merged = result.rows.map((service, index) => ({
+        const merged = await Promise.all(result.rows.map(async (service, index) => ({
             ...service,
-            certificate: domainInfo[index]
-        }))
+            certificate: domainInfo[index],
+            checks: service.name === 'Spaces' ? await checkSpacesProbes() : undefined
+        })))
 
         return merged
     } catch (error) {
@@ -71,7 +72,7 @@ export default async function monitor() {
             await run(`
                 INSERT INTO status_details (service_id, status, expected_down, upside_down, delay, note)
                 VALUES ($1, $2, $3, $4, $5, $6)
-            `, [service.id, check.status, service.expected_down, service.upside_down, check.delay, service.note ?? null])
+            `, [service.id, check.status, service.expected_down, service.upside_down, check.delay, check.note ?? service.note ?? null])
         }
     })
 
@@ -147,7 +148,11 @@ export default async function monitor() {
     }
 }
 
-async function recheck(service: DetailedService): Promise<{ status: boolean, delay: number }> {
+async function recheck(service: DetailedService): Promise<{ status: boolean, delay: number, note?: string }> {
+    if (service.name === 'Spaces') {
+        return checkCompositeSpacesService()
+    }
+
     const start = Date.now()
 
     for (let i = 0; i < config.max.attempts; i++) {
@@ -290,6 +295,98 @@ async function runInParallel<T>(
     })
 
     await Promise.all(workers)
+}
+
+async function checkCompositeSpacesService(): Promise<{ status: boolean, delay: number, note: string }> {
+    const start = Date.now()
+    const checks = await checkSpacesProbes()
+    const status = checks.every(check => check.status)
+    const summary = checks
+        .map(check => `${check.name}: ${check.status ? 'ok' : 'failed'}${check.actualStatus ? ` (${check.actualStatus})` : ''}`)
+        .join('; ')
+
+    return {
+        status,
+        delay: Date.now() - start,
+        note: summary
+    }
+}
+
+async function checkSpacesProbes(): Promise<MonitoringProbe[]> {
+    const [redirect, consolePort, containerHealth] = await Promise.all([
+        fetchProbe({
+            name: 'External Authentik redirect',
+            url: 'https://spaces.login.no/',
+            expectedStatus: 302,
+            redirect: 'manual',
+            note: 'Unauthenticated requests should redirect to Authentik.'
+        }),
+        fetchProbe({
+            name: 'Container console port',
+            url: 'http://172.17.0.1:9101/',
+            expectedStatus: 403,
+            note: 'RustFS console responds from the host-published container port.'
+        }),
+        fetchProbe({
+            name: 'Container health',
+            url: 'http://172.17.0.1:9100/health',
+            expectedStatus: 200,
+            bodyIncludes: '"ready":true',
+            note: 'RustFS health endpoint reports the service is ready.'
+        })
+    ])
+
+    return [redirect, consolePort, containerHealth]
+}
+
+async function fetchProbe({
+    name,
+    url,
+    expectedStatus,
+    redirect = 'follow',
+    bodyIncludes,
+    note
+}: {
+    name: string
+    url: string
+    expectedStatus: number
+    redirect?: RequestRedirect
+    bodyIncludes?: string
+    note: string
+}): Promise<MonitoringProbe> {
+    const start = Date.now()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+
+    try {
+        const response = await fetch(url, {
+            signal: controller.signal,
+            redirect
+        })
+        const bodyMatches = bodyIncludes ? (await response.text()).includes(bodyIncludes) : true
+        const status = response.status === expectedStatus && bodyMatches
+
+        return {
+            name,
+            url,
+            status,
+            delay: getMonitorDelay(response) ?? Date.now() - start,
+            expectedStatus,
+            actualStatus: response.status,
+            note
+        }
+    } catch (error) {
+        return {
+            name,
+            url,
+            status: false,
+            delay: Date.now() - start,
+            expectedStatus,
+            note: `${note} ${error instanceof Error ? error.message : 'Probe failed.'}`
+        }
+    } finally {
+        clearTimeout(timeout)
+    }
 }
 
 async function fetchService(service: DetailedService): Promise<{ status: boolean, delay: number }> {

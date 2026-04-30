@@ -28,6 +28,16 @@ type Bar = {
     note: string
 }
 
+type MonitoringProbe = {
+    name: string
+    url: string
+    status: boolean
+    delay: number
+    expectedStatus?: number
+    actualStatus?: number
+    note: string
+}
+
 type MonitoredService = {
     id: string
     name: string
@@ -382,6 +392,7 @@ type Monitoring = {
     uptime: string
     tags: string[]
     certificate?: Certificate
+    checks?: MonitoringProbe[]
 }
 
 type Bar = {
