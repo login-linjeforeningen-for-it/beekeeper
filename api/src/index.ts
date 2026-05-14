@@ -124,7 +124,7 @@ async function checkMaxConnections() {
             }
 
             if (active > severeThreshold) {
-                data.content = `🚨 <@&${config.CRITICAL_DEVELOPMENT_ROLE}> 🚨`
+                data.content = `🚨 <@&${config.CRITICAL_ROLE}> 🚨`
             }
 
             await fetch(config.WEBHOOK_URL, {

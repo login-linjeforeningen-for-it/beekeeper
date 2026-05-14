@@ -6,8 +6,6 @@ To start the frontend run `docker compose up`. This will start the api.
 
 Required secrets:
 ```
-DOCTL_TOKEN
-PRIVATE_TOKEN
 DB
 DB_HOST
 DB_USER
@@ -21,7 +19,6 @@ AUTHENTIK_TOKEN
 BTG_TOKEN
 INTERNAL_TOKEN
 CRITICAL_ROLE
-CRITICAL_DEVELOPMENT_ROLE
 WEBHOOK_URL
 TRAFFIC_SECRET
 ```
