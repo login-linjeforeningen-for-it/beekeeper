@@ -5,7 +5,7 @@ FROM oven/bun:alpine AS builder
 WORKDIR /api
 
 # Installs dependencies
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
 RUN bun install --frozen-lockfile
 
 # Copies the rest of the API source code
