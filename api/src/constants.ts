@@ -8,7 +8,6 @@ const requiredEnvironmentVariables = [
     'REDIRECT_URI',
     'BASE_URL',
     'BEEKEEPER_URL',
-    'AUTHENTIK_TOKEN',
     'BTG_TOKEN',
     'WEBHOOK_URL',
     'CRITICAL_ROLE',
@@ -38,7 +37,6 @@ const env = Object.fromEntries(
 const AUTH_URL = `${env.BASE_URL}/application/o/authorize/`
 const TOKEN_URL = `${env.BASE_URL}/application/o/token/`
 const USERINFO_URL = `${env.BASE_URL}/application/o/userinfo/`
-const USER_ENDPOINT = `${env.BASE_URL}/api/v3/core/users/`
 
 const config = {
     DB_PORT: env.DB_PORT,
@@ -57,8 +55,6 @@ const config = {
     TOKEN_URL,
     USERINFO_URL,
     beekeeper: env.BEEKEEPER_URL,
-    USER_ENDPOINT,
-    AUTHENTIK_TOKEN: env.AUTHENTIK_TOKEN,
     BTG_TOKEN: env.BTG_TOKEN,
     INTERNAL_TOKEN: env.INTERNAL_TOKEN,
     CRITICAL_ROLE: env.CRITICAL_ROLE,

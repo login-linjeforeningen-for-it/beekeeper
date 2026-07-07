@@ -2,8 +2,7 @@ import type { FastifyInstance } from 'fastify'
 
 import { preHandler } from '#utils/auth.ts'
 
-import { getUser, getUsers } from './handlers/users.ts'
-import { getCallback, getLogin, getToken, getTokenBTG } from './handlers/login.ts'
+import { getToken, getTokenBTG } from './handlers/login.ts'
 import {
     getDomains,
     getLive,
@@ -74,15 +73,9 @@ export default async function apiRoutes(fastify: FastifyInstance) {
     fastify.get('/health', { logLevel: 'silent' }, getHealth)
     fastify.get('/version', getVersion)
 
-    // user
-    fastify.get('/user/:email', getUser)
-    fastify.get('/users', getUsers)
+    // token validation
     fastify.get('/token', getToken)
     fastify.get('/token/btg', getTokenBTG)
-
-    // login
-    fastify.get('/login', getLogin)
-    fastify.get('/callback', getCallback)
 
     // traffic logging
     fastify.get('/traffic/metrics', { preHandler }, getMetrics)
