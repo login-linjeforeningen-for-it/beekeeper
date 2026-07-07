@@ -419,11 +419,17 @@ async function fetchService(service: DetailedService): Promise<{ status: boolean
 
         return { status: true, delay }
     } catch (error) {
-        console.log(`Monitor error for service ${service.name}: ${error}`)
+        if (!isAbortError(error)) {
+            console.warn(`Monitor error for service ${service.name}: ${error instanceof Error ? error.message : String(error)}`)
+        }
         return { status: false, delay: new Date().getTime() - start }
     } finally {
         clearTimeout(timeout)
     }
+}
+
+function isAbortError(error: unknown): boolean {
+    return error instanceof Error && error.name === 'AbortError'
 }
 
 function getMonitorDelay(response: Response) {
