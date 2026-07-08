@@ -5,7 +5,7 @@ import net from 'net'
 import { getCertificateDetails } from './getCertificateDetails'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let domainInfo: any[] = []
+let domainInfo: Map<string, any> = new Map()
 let domainInfoLastRefreshed = 0
 const CERT_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 
@@ -14,32 +14,30 @@ export async function preloadStatus(): Promise<Monitoring[]> {
         const query = await loadSQL('fetchService.sql')
         const result = await run(query)
 
-        const domainsLength = result.rows.filter((row) => row.url && row.url.startsWith('https://')).length
+        const httpsServices = result.rows.filter((row) => row.url && row.url.startsWith('https://'))
         const stale = Date.now() - domainInfoLastRefreshed > CERT_REFRESH_INTERVAL_MS
-        if (domainInfo.length !== domainsLength || stale) {
-            const temp = []
-            for (const service of result.rows) {
-                if (service.url && service.url.startsWith('https://')) {
-                    const cert = await getCertificateDetails(service)
-                    temp.push(cert.valid ? {
-                        valid: cert.valid,
-                        subjectCN: cert.subjectCN,
-                        issuer: cert.issuer,
-                        validFrom: cert.validFrom,
-                        validTo: cert.validTo,
-                        keyType: cert.keyType,
-                        dnsNames: cert.dnsNames,
-                    } : { ...cert })
-                }
+        if (domainInfo.size !== httpsServices.length || stale) {
+            const temp = new Map()
+            for (const service of httpsServices) {
+                const cert = await getCertificateDetails(service)
+                temp.set(service.url, cert.valid ? {
+                    valid: cert.valid,
+                    subjectCN: cert.subjectCN,
+                    issuer: cert.issuer,
+                    validFrom: cert.validFrom,
+                    validTo: cert.validTo,
+                    keyType: cert.keyType,
+                    dnsNames: cert.dnsNames,
+                } : { ...cert })
             }
 
             domainInfo = temp
             domainInfoLastRefreshed = Date.now()
         }
 
-        const merged = await Promise.all(result.rows.map(async (service, index) => ({
+        const merged = await Promise.all(result.rows.map(async (service) => ({
             ...service,
-            certificate: domainInfo[index],
+            certificate: domainInfo.get(service.url),
             checks: service.name === 'Spaces' ? await checkSpacesProbes() : undefined
         })))
 
