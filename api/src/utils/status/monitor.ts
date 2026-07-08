@@ -6,6 +6,8 @@ import { getCertificateDetails } from './getCertificateDetails'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let domainInfo: any[] = []
+let domainInfoLastRefreshed = 0
+const CERT_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 
 export async function preloadStatus(): Promise<Monitoring[]> {
     try {
@@ -13,7 +15,8 @@ export async function preloadStatus(): Promise<Monitoring[]> {
         const result = await run(query)
 
         const domainsLength = result.rows.filter((row) => row.url && row.url.startsWith('https://')).length
-        if (domainInfo.length !== domainsLength) {
+        const stale = Date.now() - domainInfoLastRefreshed > CERT_REFRESH_INTERVAL_MS
+        if (domainInfo.length !== domainsLength || stale) {
             const temp = []
             for (const service of result.rows) {
                 if (service.url && service.url.startsWith('https://')) {
@@ -31,6 +34,7 @@ export async function preloadStatus(): Promise<Monitoring[]> {
             }
 
             domainInfo = temp
+            domainInfoLastRefreshed = Date.now()
         }
 
         const merged = await Promise.all(result.rows.map(async (service, index) => ({
