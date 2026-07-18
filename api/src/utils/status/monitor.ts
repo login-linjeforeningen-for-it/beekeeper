@@ -243,7 +243,9 @@ async function notify(service: CheckedServiceStatus) {
             embeds: [
                 {
                     title: `🐝 ${service.name} ${service.bars[0].status ? 'is up.' : 'went down!'}`,
-                    description: `**Service Name**\n${service.name}\n\n${service.url.length ? `**Service URL**\n${service.url}\n\n` : ''}**Service Type**\n${service.type}`,
+                    description: `**Service Name**\n${service.name}\n\n` +
+                        (service.url.length ? `**Service URL**\n${service.url}\n\n` : '') +
+                        `**Service Type**\n${service.type}`,
                     color: service.bars[0].status ? 0x48a860 : 0xff0000,
                     timestamp: new Date().toISOString(),
                     footer: {

@@ -1,11 +1,6 @@
 # env
 .env
 .env.*
-secret.json
-.secret.json
-.secret2.json
-.dev.json
-.prod.json
 
 # dependencies
 node_modules
@@ -14,15 +9,6 @@ package-lock.json
 # build
 dist
 *.tsbuildinfo
-next-env.d.ts
-.next/
-/out/
-/build
-
-# go
-/main
-*.out
-coverage.txt
 
 # testing
 coverage

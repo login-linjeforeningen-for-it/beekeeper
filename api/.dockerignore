@@ -1,7 +1,12 @@
 Dockerfile
 .dockerignore
-node_modules
 .git
+.gitignore
+node_modules
 .env
 .env.*
+dist
+*.tsbuildinfo
+coverage
 *.md
+npm-debug.log*

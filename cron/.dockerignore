@@ -1,4 +1,7 @@
+Dockerfile
+.dockerignore
 .git
+.gitignore
 .env
 .env.*
 *.md

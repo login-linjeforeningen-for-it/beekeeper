@@ -99,7 +99,8 @@ export async function postService(req: FastifyRequest, res: FastifyReply) {
         ` })
 
         const result = await run(
-            `INSERT INTO status (name, type, url, interval, expected_down, upside_down, max_consecutive_failures, note, enabled, notification, user_agent, port, expected_status) 
+            `INSERT INTO status (name, type, url, interval, expected_down, upside_down,
+              max_consecutive_failures, note, enabled, notification, user_agent, port, expected_status)
              SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
              WHERE NOT EXISTS (SELECT 1 FROM status WHERE name = $1)
              RETURNING id, name;`,

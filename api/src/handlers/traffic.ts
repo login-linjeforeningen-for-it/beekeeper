@@ -67,7 +67,11 @@ export async function getLive(_req: FastifyRequest, res: FastifyReply) {
 
     function flushBatch() {
         if (countMap.size > 0) {
-            const aggregated = Array.from(countMap.entries()).map(([iso, { count, minTimestamp }]) => ({ iso, count, timestamp: new Date(minTimestamp).toISOString() }))
+            const aggregated = Array.from(countMap.entries()).map(([iso, { count, minTimestamp }]) => ({
+                iso,
+                count,
+                timestamp: new Date(minTimestamp).toISOString(),
+            }))
             countMap.clear()
             res.sse.send({ event: 'traffic', data: aggregated }).catch(() => {})
         }
@@ -289,7 +293,10 @@ export async function postTraffic(req: FastifyRequest, res: FastifyReply) {
 
     const { user_agent, domain, path, method, referer, timestamp, request_time, status, country_iso } = req.body as PostTrafficBody || {}
 
-    if (!user_agent || !domain || !path || !method || !referer || request_time === undefined || timestamp === undefined || status === undefined) {
+    if (
+        !user_agent || !domain || !path || !method || !referer ||
+        request_time === undefined || timestamp === undefined || status === undefined
+    ) {
         return res.status(400).send({ error: 'Missing required fields.' })
     }
 
@@ -332,7 +339,7 @@ function insertTrafficBatch(records: TrafficRecord[]) {
             record.countryIso
         )
 
-        return `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9})`
+        return `(${Array.from({ length: 9 }, (_, i) => `$${offset + i + 1}`).join(', ')})`
     }).join(', ')
 
     return runWithoutRetry(

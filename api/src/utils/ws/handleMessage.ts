@@ -20,21 +20,22 @@ const CHAT_BEHAVIOR_SYSTEM_PROMPT = [
 ].join(' ')
 
 export default fp(async function wsPlugin(fastify: FastifyInstance) {
-    fastify.get<{ Params: { id: string } }>('/api/client/ws/:id', { websocket: true }, (connection: WS, req: FastifyRequest<{ Params: { id: string } }>) => {
-        const id = (req.params as { id: string}).id
+    fastify.get<{ Params: { id: string } }>('/api/client/ws/:id', { websocket: true },
+        (connection: WS, req: FastifyRequest<{ Params: { id: string } }>) => {
+            const id = (req.params as { id: string}).id
 
-        registerClient(id, connection)
-        fastify.clients = beeswarm.get(id)!.size
+            registerClient(id, connection)
+            fastify.clients = beeswarm.get(id)!.size
 
-        connection.on('message', (message) => {
-            handleMessage(id, connection, message)
+            connection.on('message', (message) => {
+                handleMessage(id, connection, message)
+            })
+
+            connection.on('close', () => {
+                fastify.clients = beeswarm.size
+                removeClient(id, connection)
+            })
         })
-
-        connection.on('close', () => {
-            fastify.clients = beeswarm.size
-            removeClient(id, connection)
-        })
-    })
 })
 
 function defaultModelMetrics(): GPT_ModelMetrics {
