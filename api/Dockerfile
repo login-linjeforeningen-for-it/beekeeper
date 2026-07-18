@@ -1,17 +1,15 @@
-# Latest Bun Alpine Image
 FROM oven/bun:alpine AS builder
+WORKDIR /app
 
-# Sets working directory
-WORKDIR /api
-
-# Installs dependencies
 COPY package.json bun.lock bunfig.toml ./
-RUN bun install --frozen-lockfile
+RUN bun install --production --frozen-lockfile
 
-# Copies the rest of the API source code
+RUN addgroup -S app && adduser -S app -G app
+RUN chown app:app /app
+USER app
+
 COPY . .
 
-# Exposes port 8080
 EXPOSE 8080
 
-CMD bun src/index.ts
+CMD ["bun", "src/index.ts"]
