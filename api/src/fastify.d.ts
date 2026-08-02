@@ -5,6 +5,7 @@ declare module 'fastify' {
         websocketServer: WebSocket.Server
         injectWS: InjectWSFn
         monitoring: Buffer
+        refreshMonitoring: () => Promise<void>
         favicon: Buffer
         internalDashboard: Buffer
         domains: Buffer

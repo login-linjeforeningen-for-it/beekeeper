@@ -5,6 +5,10 @@ import { preloadInternalDashboard } from '#utils/dashboard/internal/sources.ts'
 import { preloadStatus } from '#utils/status/monitor.ts'
 
 export default fp(async (fastify) => {
+    fastify.refreshMonitoring = async () => {
+        fastify.monitoring = Buffer.from(JSON.stringify(await preloadStatus()))
+    }
+
     async function refresh() {
         const [internalDashboard, monitoring, domains, metrics] = await Promise.all([
             preloadInternalDashboard(),

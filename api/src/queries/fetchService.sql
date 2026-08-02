@@ -1,6 +1,7 @@
 SELECT
     s.id,
     s.name,
+    s.type,
     s.enabled,
     s.url,
     s.port,
@@ -9,6 +10,13 @@ SELECT
     n.name AS "notificationPolicyName",
     n.message AS "notificationPolicyMessage",
     n.webhook AS "notificationPolicyWebhook",
+    s.interval,
+    s.expected_down AS "expectedDown",
+    s.upside_down AS "upsideDown",
+    s.user_agent AS "userAgent",
+    s.expected_status AS "expectedStatus",
+    s.note,
+    s.notified,
     s.max_consecutive_failures as "maxConsecutiveFailures",
     COALESCE(bars.bars, '[]'::json) AS bars,
     CASE

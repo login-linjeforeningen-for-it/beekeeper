@@ -55,6 +55,10 @@ type MonitoredService = {
     tags: string[]
     enabled: boolean
     port: number | null
+    notification_policy_id?: number | null
+    notification_policy_name?: string | null
+    notification_policy_message?: string | null
+    notification_policy_webhook?: string | null
 }
 
 type MonitoredServiceType = 'fetch' | 'post' | 'tcp'
@@ -385,11 +389,19 @@ type GPT_GPU = {
 type Monitoring = {
     id: number
     name: string
+    type: MonitoredServiceType
     enabled: boolean
     url: string
     port: number
     notification: number | null
     notificationPolicy?: ServiceNotification | null
+    interval: number
+    expectedDown: boolean
+    upsideDown: boolean
+    userAgent: string | null
+    expectedStatus: number | null
+    note: string | null
+    notified: string | null
     maxConsecutiveFailures: number
     bars: Bar[]
     uptime: string

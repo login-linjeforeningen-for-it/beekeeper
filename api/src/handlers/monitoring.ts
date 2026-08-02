@@ -42,7 +42,16 @@ export async function getStatus(
 export async function getService(req: FastifyRequest, res: FastifyReply) {
     try {
         const { id } = req.params as { id: string }
-        const result = await run('SELECT * FROM status WHERE id = $1;', [id])
+        const serviceId = normalizeResourceId(id)
+        if (serviceId === null) return res.status(400).send({ error: 'Invalid service id.' })
+        const result = await run(
+            `SELECT s.*, n.id AS notification_policy_id, n.name AS notification_policy_name,
+                    n.message AS notification_policy_message, n.webhook AS notification_policy_webhook
+             FROM status s
+             LEFT JOIN status_notifications n ON s.notification = n.id
+             WHERE s.id = $1;`,
+            [serviceId]
+        )
         if (!result.rowCount) {
             return res.status(404).send({ error: 'Service not found.' })
         }
@@ -54,6 +63,13 @@ export async function getService(req: FastifyRequest, res: FastifyReply) {
             type: row.type,
             url: row.url,
             notification: row.notification,
+            port: row.port,
+            notificationPolicy: row.notification_policy_id ? {
+                id: row.notification_policy_id,
+                name: row.notification_policy_name,
+                message: row.notification_policy_message,
+                webhook: row.notification_policy_webhook,
+            } : null,
             interval: row.interval,
             expectedDown: row.expected_down,
             upsideDown: row.upside_down,
@@ -83,7 +99,11 @@ export async function postService(req: FastifyRequest, res: FastifyReply) {
         return res.status(400).send({ error: 'Unauthorized' })
     }
 
-    if (!isValidServiceBody({ name, type, url, interval, expectedDown, upsideDown, maxConsecutiveFailures, enabled })) {
+    const notificationId = normalizeNotificationId(notification)
+    const expectedStatusValue = normalizeExpectedStatus(expectedStatus)
+    if (!isValidServiceBody({ name, type, url, interval, expectedDown, upsideDown, maxConsecutiveFailures, enabled, port, expectedStatus: expectedStatusValue })
+        || notificationId === undefined
+        || (expectedStatusValue === undefined && expectedStatus !== undefined && expectedStatus !== null && expectedStatus !== 0)) {
         return res.status(400).send({ error: 'Missing required field.' })
     }
 
@@ -107,14 +127,16 @@ export async function postService(req: FastifyRequest, res: FastifyReply) {
             [
                 name, type, url, interval, expectedDown, upsideDown,
                 maxConsecutiveFailures, note || null, enabled,
-                Number(notification) || null, userAgent || null, port || null,
-                normalizeExpectedStatus(expectedStatus)
+                notificationId, userAgent || null, port || null,
+                expectedStatusValue
             ]
         )
 
         if (!result.rowCount) {
             return res.status(409).send({ error: 'Service already exists. Update the existing one instead' })
         }
+
+        await req.server.refreshMonitoring()
 
         return res.send({
             message: `Successfully added service ${name} to monitoring.`,
@@ -128,6 +150,8 @@ export async function postService(req: FastifyRequest, res: FastifyReply) {
 
 export async function putService(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
+    const serviceId = normalizeResourceId(id)
+    if (serviceId === null) return res.status(400).send({ error: 'Invalid service id.' })
     const {
         name, type, url, interval, expectedDown, upsideDown, userAgent, port,
         expectedStatus, maxConsecutiveFailures, note, enabled, notification
@@ -137,7 +161,11 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
         return res.status(400).send({ error: 'Unauthorized' })
     }
 
-    if (!isValidServiceBody({ name, type, url, interval, expectedDown, upsideDown, maxConsecutiveFailures, enabled })) {
+    const notificationId = normalizeNotificationId(notification)
+    const expectedStatusValue = normalizeExpectedStatus(expectedStatus)
+    if (!isValidServiceBody({ name, type, url, interval, expectedDown, upsideDown, maxConsecutiveFailures, enabled, port, expectedStatus: expectedStatusValue })
+        || notificationId === undefined
+        || (expectedStatusValue === undefined && expectedStatus !== undefined && expectedStatus !== null && expectedStatus !== 0)) {
         return res.status(400).send({ error: 'Missing required field.' })
     }
 
@@ -175,8 +203,8 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
             [
                 name, type, url, interval, expectedDown, upsideDown,
                 maxConsecutiveFailures, note, enabled,
-                Number(notification) || null, id, userAgent || null, port || null,
-                normalizeExpectedStatus(expectedStatus)
+                notificationId, serviceId, userAgent || null, port || null,
+                expectedStatusValue
             ]
         )
 
@@ -184,6 +212,7 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
             return res.status(404).send({ error: 'Service not found.' })
         }
 
+        await req.server.refreshMonitoring()
         return res.send({ message: `Successfully updated service ${name} (${id}).` })
     } catch (error) {
         debug({ basic: `Database error in putService: ${JSON.stringify(error)}` })
@@ -193,12 +222,15 @@ export async function putService(req: FastifyRequest, res: FastifyReply) {
 
 export async function deleteStatus(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
+    const serviceId = normalizeResourceId(id)
+    if (serviceId === null) return res.status(400).send({ error: 'Invalid service id.' })
     try {
-        const result = await run('DELETE from status WHERE id = $1;', [id])
+        const result = await run('DELETE from status WHERE id = $1;', [serviceId])
         if (!result.rowCount) {
             return res.status(404).send({ error: 'Service not found.' })
         }
 
+        await req.server.refreshMonitoring()
         return res.send({ message: `Successfully deleted service ${id}` })
     } catch (error) {
         debug({ basic: `Database error in deleteStatus: ${JSON.stringify(error)}` })
@@ -208,11 +240,15 @@ export async function deleteStatus(req: FastifyRequest, res: FastifyReply) {
 
 export async function postStatusUpdate(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
+    const serviceId = normalizeResourceId(id)
+    if (serviceId === null) return res.status(400).send({ error: 'Invalid service id.' })
     const { delay } = req.query as { delay?: string }
+    const delayValue = delay === undefined ? 0 : Number(delay)
+    if (!Number.isFinite(delayValue) || delayValue < 0) return res.status(400).send({ error: 'Invalid delay.' })
 
     try {
         const query = await loadSQL('fetchServicesWithBars.sql')
-        const result = await run(query, [id])
+        const result = await run(query, [serviceId])
         if (!result.rowCount) {
             return res.status(404).send({ error: 'No active service found.' })
         }
@@ -226,13 +262,13 @@ export async function postStatusUpdate(req: FastifyRequest, res: FastifyReply) {
                 SELECT 1 FROM status_details
                 WHERE service_id = $1 AND timestamp = $7
             )`,
-            [id, service.expected_down, service.upside_down, true, delay ? Number(delay) : 0, service.note, timestamp]
+            [serviceId, service.expected_down, service.upside_down, true, delayValue, service.note, timestamp]
         )
 
         return res.send({
             message: 'Status recieved.',
-            id: Number(id),
-            delay: !isNaN(Number(delay)) ? Number(delay) : 0
+            id: serviceId,
+            delay: delayValue
         })
     } catch (error) {
         debug({ basic: `Database error in postUpdate: ${JSON.stringify(error)}` })
@@ -257,9 +293,14 @@ export async function postTag(req: FastifyRequest, res: FastifyReply) {
         return res.status(400).send({ error: 'Unauthorized' })
     }
 
+    if (!name || !color) {
+        return res.status(400).send({ error: 'Missing required field.' })
+    }
+
     try {
         debug({ detailed: `Posting tag: name=${name}, color=${color}` })
         await run('INSERT INTO status_tags (name, color) VALUES ($1, $2);', [name, color])
+        await req.server.refreshMonitoring()
         return res.send({ message: `Successfully added tag ${name} with color ${color}.` })
     } catch (error) {
         debug({ basic: `Database error in postTag: ${JSON.stringify(error)}` })
@@ -269,8 +310,11 @@ export async function postTag(req: FastifyRequest, res: FastifyReply) {
 
 export async function deleteTag(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
+    const tagId = normalizeResourceId(id)
+    if (tagId === null) return res.status(400).send({ error: 'Invalid tag id.' })
     try {
-        const result = await run('DELETE from status_tags WHERE id = $1;', [id])
+        const result = await run('DELETE from status_tags WHERE id = $1;', [tagId])
+        await req.server.refreshMonitoring()
         return res.send(result.rows)
     } catch (error) {
         debug({ basic: `Database error in deleteTag: ${JSON.stringify(error)}` })
@@ -308,12 +352,18 @@ export async function postStatusNotification(
             detailed: `Adding status notification: name=${name}, message=${message}, webhook=${webhook}`
         })
 
-        await run(
+        const result = await run(
             `INSERT INTO status_notifications (name, message, webhook)
              SELECT $1, $2, $3
              WHERE NOT EXISTS (SELECT 1 FROM status_notifications WHERE name = $1);`,
             [name, message ?? '', webhook]
         )
+
+        if (!result.rowCount) {
+            return res.status(409).send({ error: 'Notification already exists.' })
+        }
+
+        await req.server.refreshMonitoring()
 
         return res.send({ message: `Successfully added notification ${name}.` })
     } catch (error) {
@@ -327,6 +377,8 @@ export async function putStatusNotification(
     res: FastifyReply
 ) {
     const { id } = req.params as { id: string }
+    const notificationId = normalizeResourceId(id)
+    if (notificationId === null) return res.status(400).send({ error: 'Invalid notification id.' })
     const { name, message, webhook } = req.body as StatusNotificationBody
     const { valid } = await tokenWrapper(req, res)
 
@@ -350,13 +402,14 @@ export async function putStatusNotification(
                  webhook = $4
              WHERE id = $1
              RETURNING id, name;`,
-            [id, name, message ?? '', webhook]
+            [notificationId, name, message ?? '', webhook]
         )
 
         if (!result.rows.length) {
             return res.status(404).send({ error: `Notification with id ${id} not found.` })
         }
 
+        await req.server.refreshMonitoring()
         return res.send({ message: `Successfully updated notification ${id} (${name}).` })
     } catch (error) {
         debug({ basic: `Database error in putNotification: ${JSON.stringify(error)}` })
@@ -366,12 +419,15 @@ export async function putStatusNotification(
 
 export async function deleteStatusNotification(req: FastifyRequest, res: FastifyReply) {
     const { id } = req.params as { id: string }
+    const notificationId = normalizeResourceId(id)
+    if (notificationId === null) return res.status(400).send({ error: 'Invalid notification id.' })
     try {
-        const result = await run('DELETE from status_notifications WHERE id = $1;', [id])
+        const result = await run('DELETE from status_notifications WHERE id = $1;', [notificationId])
         if (!result.rowCount) {
             return res.status(404).send({ error: 'Notification not found.' })
         }
 
+        await req.server.refreshMonitoring()
         return res.send({ message: `Successfully deleted notification ${id}` })
     } catch (error) {
         debug({ basic: `Database error in deleteNotification: ${JSON.stringify(error)}` })
@@ -388,11 +444,18 @@ function isValidServiceBody(body: {
     upsideDown: boolean
     maxConsecutiveFailures: number
     enabled: boolean
+    port?: number
+    expectedStatus?: number | null
 }) {
     return Boolean(
-        body.name && body.type && (body.type !== 'fetch' || body.url) && body.interval
+        body.name && ['fetch', 'post', 'tcp'].includes(body.type) && (body.type === 'post' || body.url)
+        && Number.isInteger(body.interval) && body.interval > 0
         && typeof body.expectedDown === 'boolean' && typeof body.upsideDown === 'boolean'
-        && typeof body.maxConsecutiveFailures === 'number' && typeof body.enabled === 'boolean'
+        && Number.isInteger(body.maxConsecutiveFailures) && body.maxConsecutiveFailures >= 0
+        && typeof body.enabled === 'boolean'
+        && (body.port === undefined || (Number.isInteger(body.port) && body.port >= 1 && body.port <= 65535))
+        && (body.type !== 'tcp' || body.port !== undefined)
+        && (body.expectedStatus === null || body.expectedStatus === undefined || Number.isInteger(body.expectedStatus))
     )
 }
 
@@ -403,10 +466,21 @@ function normalizeExpectedStatus(value: number | null | undefined) {
 
     const status = Number(value)
     if (!Number.isInteger(status) || status < 100 || status > 599) {
-        return null
+        return undefined
     }
 
     return status
+}
+
+function normalizeNotificationId(value: string | number | null | undefined) {
+    if (value === undefined || value === null || value === '') return null
+    const id = Number(value)
+    return Number.isInteger(id) && id > 0 ? id : undefined
+}
+
+function normalizeResourceId(value: string) {
+    const id = Number(value)
+    return Number.isInteger(id) && id > 0 ? id : null
 }
 
 function roundToNearestMinute(date: Date) {
