@@ -60,6 +60,7 @@ type MonitoredService = {
 type MonitoredServiceType = 'fetch' | 'post' | 'tcp'
 
 type ServiceNotification = {
+    id: number
     name: string
     message: string
     webhook: string
@@ -387,6 +388,8 @@ type Monitoring = {
     enabled: boolean
     url: string
     port: number
+    notification: number | null
+    notificationPolicy?: ServiceNotification | null
     maxConsecutiveFailures: number
     bars: Bar[]
     uptime: string

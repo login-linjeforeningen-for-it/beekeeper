@@ -74,6 +74,12 @@ export async function preloadStatus(): Promise<Monitoring[]> {
 
         const merged = await Promise.all(result.rows.map(async (service) => ({
             ...service,
+            notificationPolicy: service.notificationPolicyId ? {
+                id: service.notificationPolicyId,
+                name: service.notificationPolicyName,
+                message: service.notificationPolicyMessage,
+                webhook: service.notificationPolicyWebhook,
+            } : null,
             certificate: domainInfo.get(service.url),
             checks: service.name === 'Spaces' ? await checkSpacesProbes() : undefined
         })))

@@ -4,6 +4,11 @@ SELECT
     s.enabled,
     s.url,
     s.port,
+    s.notification,
+    n.id AS "notificationPolicyId",
+    n.name AS "notificationPolicyName",
+    n.message AS "notificationPolicyMessage",
+    n.webhook AS "notificationPolicyWebhook",
     s.max_consecutive_failures as "maxConsecutiveFailures",
     COALESCE(bars.bars, '[]'::json) AS bars,
     CASE
@@ -12,6 +17,9 @@ SELECT
     END AS uptime,
     COALESCE(tags.tags, '[]') AS tags
 FROM status s
+
+LEFT JOIN status_notifications n
+    ON s.notification = n.id
 
 -- Last 20 bars
 LEFT JOIN LATERAL (
