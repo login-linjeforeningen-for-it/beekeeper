@@ -116,7 +116,7 @@ async function checkMaxConnections() {
                 embeds: [
                     {
                         title: '🐝 BeeKeeper Database Max Connections 🐝',
-                        description: `🐝 Many connections detected: ${active.toFixed(2)}/${threshold}.`,
+                        description: `🐝 Many connections detected: ${active}/${threshold}.`,
                         color: 0xff0000,
                         timestamp: new Date().toISOString()
                     }
@@ -127,7 +127,10 @@ async function checkMaxConnections() {
                 data.content = `🚨 <@&${config.CRITICAL_ROLE}> 🚨`
             }
 
-            await fetch(config.WEBHOOK_URL, {
+            const alertWebhook = new URL(config.WEBHOOK_URL)
+            alertWebhook.searchParams.set('thread_id', config.LOG_ALERTS_THREAD_ID)
+
+            await fetch(alertWebhook, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
