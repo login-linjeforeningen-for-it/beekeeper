@@ -17,13 +17,12 @@
 
 ---
 
-BeeKeeper is a monitoring and infrastructure API for Login, used by QueenBee for internal dashboards. It exposes endpoints for service monitoring, traffic analysis, load balancing, system stats, and user management.
+BeeKeeper is a monitoring API for Login, used by QueenBee. It exposes endpoints for service monitoring, traffic analysis, and user management.
 
 ## Features
 
-- **Service monitoring** with real-time status via SSE and WebSocket
-- **Traffic analysis** and load balancing insights
-- **System statistics** and infrastructure health
+- **Service monitoring** with real-time status via SSE
+- **Traffic analysis** and request metrics
 - **Authentik integration** for user and group management
 - **Discord alerts** for critical service events
 - **Scheduled cron jobs** for data collection and maintenance
@@ -61,14 +60,13 @@ All variables go in the root `.env` file.
 | `BEEKEEPER_URL`    |              | Public URL of this BeeKeeper instance              |
 | `AUTHENTIK_TOKEN`  |              | Authentik API token for user management            |
 | `BTG_TOKEN`        |              | BTG integration token                              |
-| `INTERNAL_TOKEN`   |              | Token for Internal API calls                       |
 | `WEBHOOK_URL`      |              | Discord webhook URL for alerts                     |
 | `CRITICAL_ROLE`    |              | Discord role ID to ping on critical alerts         |
 | `TRAFFIC_SECRET`   |              | Secret for traffic data ingestion                  |
 
 ## Project Structure
 
-- `api/src/handlers/` - HTTP handlers (monitoring, traffic, load balancing, system, users, AI)
+- `api/src/handlers/` - HTTP handlers (monitoring, traffic, system, login)
 - `api/src/routes.ts` - Route registration
 - `api/src/constants.ts` - Configuration and environment variable loading
 - `api/src/db.ts` - Database client

@@ -1,13 +1,11 @@
 import cors from '@fastify/cors'
 import sse from '@fastify/sse'
-import websocket from '@fastify/websocket'
 import Fastify from 'fastify'
 import fs from 'fs'
 import path from 'path'
 import config from '#constants'
 import apiRoutes from './routes.ts'
 import fp from './fp.ts'
-import ws from './utils/ws/handleMessage.ts'
 import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
 import monitor from './utils/status/monitor.ts'
 import run from '#db'
@@ -46,8 +44,6 @@ const fastify = Fastify({
 })
 
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
-fastify.decorate('internalDashboard', Buffer.from(''))
-fastify.decorate('clients', 0)
 fastify.decorate('domains', Buffer.from(JSON.stringify({ domains: [] })))
 fastify.decorate('metrics', Buffer.from(JSON.stringify({
     total_requests: '0',
@@ -64,9 +60,7 @@ fastify.decorate('metrics', Buffer.from(JSON.stringify({
     requests_over_time: []
 })))
 
-fastify.register(websocket)
 fastify.register(sse)
-fastify.register(ws)
 fastify.register(fp)
 fastify.register(apiRoutes, { prefix: '/api' })
 fastify.register(cors, {

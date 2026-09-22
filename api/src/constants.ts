@@ -12,8 +12,7 @@ const requiredEnvironmentVariables = [
     'WEBHOOK_URL',
     'CRITICAL_ROLE',
     'CRITICAL_ROLE',
-    'TRAFFIC_SECRET',
-    'INTERNAL_TOKEN'
+    'TRAFFIC_SECRET'
 ]
 
 const missingVariables = requiredEnvironmentVariables.filter(
@@ -56,7 +55,6 @@ const config = {
     USERINFO_URL,
     beekeeper: env.BEEKEEPER_URL,
     BTG_TOKEN: env.BTG_TOKEN,
-    INTERNAL_TOKEN: env.INTERNAL_TOKEN,
     CRITICAL_ROLE: env.CRITICAL_ROLE,
     WEBHOOK_URL: env.WEBHOOK_URL,
     LOG_ALERTS_THREAD_ID: process.env.LOG_ALERTS_THREAD_ID || '1484122179665788990',
@@ -71,9 +69,7 @@ const config = {
     max: {
         attempts: 5,
         concurrency: 5
-    },
-    internal: 'https://internal.login.no/api',
-    workerbee: 'https://workerbee.login.no/api/v2'
+    }
 }
 
 export default config

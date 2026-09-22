@@ -1,7 +1,6 @@
 import config from '#constants'
 import fp from 'fastify-plugin'
 import run, { loadSQL } from '#db'
-import { preloadInternalDashboard } from '#utils/dashboard/internal/sources.ts'
 import { preloadStatus } from '#utils/status/monitor.ts'
 
 export default fp(async (fastify) => {
@@ -10,14 +9,12 @@ export default fp(async (fastify) => {
     }
 
     async function refresh() {
-        const [internalDashboard, monitoring, domains, metrics] = await Promise.all([
-            preloadInternalDashboard(),
+        const [monitoring, domains, metrics] = await Promise.all([
             preloadStatus(),
             preloadDomains(),
             preloadMetrics(),
         ])
 
-        fastify.internalDashboard = Buffer.from(JSON.stringify(internalDashboard))
         fastify.monitoring = Buffer.from(JSON.stringify(monitoring))
         fastify.domains = Buffer.from(JSON.stringify(domains))
         fastify.metrics = Buffer.from(JSON.stringify(metrics))

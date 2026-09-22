@@ -14,14 +14,6 @@ export function getVersion(_: FastifyRequest, res: FastifyReply) {
     return res.send(config.version)
 }
 
-export async function getInternalDashboard(
-    this: FastifyInstance,
-    _: FastifyRequest,
-    res: FastifyReply
-) {
-    res.type('application/json').send(this.internalDashboard)
-}
-
 export async function getFavicon(
     this: FastifyInstance,
     _req: FastifyRequest,
