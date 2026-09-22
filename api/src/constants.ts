@@ -1,8 +1,5 @@
 const requiredEnvironmentVariables = [
-    'BASE_URL',
-    'BTG_TOKEN',
-    'WEBHOOK_URL',
-    'CRITICAL_ROLE'
+    'BASE_URL'
 ]
 
 const missingVariables = requiredEnvironmentVariables.filter(
@@ -18,16 +15,8 @@ if (missingVariables.length > 0) {
     )
 }
 
-const env = Object.fromEntries(
-    [...requiredEnvironmentVariables]
-        .map((key) => [key, process.env[key]])
-)
-
 const config = {
-    USERINFO_URL: `${env.BASE_URL}/application/o/userinfo/`,
-    BTG_TOKEN: env.BTG_TOKEN,
-    CRITICAL_ROLE: env.CRITICAL_ROLE,
-    WEBHOOK_URL: env.WEBHOOK_URL
+    USERINFO_URL: `${process.env.BASE_URL}/application/o/userinfo/`
 }
 
 export default config

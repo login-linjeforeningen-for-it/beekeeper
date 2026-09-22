@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import config from '#constants'
 
-const { USERINFO_URL, BTG_TOKEN } = config
+const { USERINFO_URL } = config
 
 type UserInfo = {
     sub: string
@@ -72,24 +72,6 @@ export async function checkToken(token: string): Promise<{ valid: boolean; userI
     }
 }
 
-export async function preHandler(req: FastifyRequest, res: FastifyReply) {
-    const authHeader = req.headers['authorization']
-    const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-        ? authHeader.slice(7)
-        : null
-
-    if (!token) {
-        return res.status(401).send({ error: 'Missing or invalid Authorization header' })
-    }
-
-    const result = await checkToken(token)
-    if (!result.valid || !result.userInfo) {
-        return res.status(401).send({ error: result.error ?? 'Unauthorized' })
-    }
-
-    req.user = result.userInfo
-}
-
 export async function tokenWrapper(req: FastifyRequest, res: FastifyReply): Promise<{ valid: boolean; error?: string }> {
     const authHeader = req.headers['authorization']
     const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
@@ -98,11 +80,6 @@ export async function tokenWrapper(req: FastifyRequest, res: FastifyReply): Prom
 
     if (!token) {
         return { valid: false, error: 'Missing or invalid Authorization header' }
-    }
-
-    // BTG fallback: static token used when Authentik is unavailable
-    if (token === BTG_TOKEN) {
-        return { valid: true }
     }
 
     try {

@@ -17,7 +17,7 @@
 
 ---
 
-BeeKeeper is a token-validation API for Login, used by QueenBee. It validates Authentik access tokens and alerts on break-the-glass logins.
+BeeKeeper is a token-validation API for Login, used by QueenBee. It validates Authentik access tokens.
 
 ## Endpoints
 
@@ -27,7 +27,6 @@ BeeKeeper is a token-validation API for Login, used by QueenBee. It validates Au
 | `GET`  | `/api/health`   | Liveness/readiness probe                            |
 | `GET`  | `/api/version`  | Version from `package.json`                         |
 | `GET`  | `/api/token`    | Validates a bearer token against Authentik          |
-| `GET`  | `/api/token/btg`| As above, plus a Discord alert on break-the-glass use|
 
 Token validation requires the caller to be in the `TekKom` or `queenbee` group.
 
@@ -54,9 +53,6 @@ All variables go in the root `.env` file.
 | Name               | Default      | Notes                                              |
 |--------------------|--------------|----------------------------------------------------|
 | `BASE_URL`         |              | Base URL for your Authentik instance               |
-| `BTG_TOKEN`        |              | Break-the-glass static token                       |
-| `WEBHOOK_URL`      |              | Discord webhook URL for alerts                     |
-| `CRITICAL_ROLE`    |              | Discord role ID to ping on critical alerts         |
 
 ## Project Structure
 

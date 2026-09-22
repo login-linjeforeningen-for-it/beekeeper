@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 
-import { getToken, getTokenBTG } from './handlers/login.ts'
+import { getToken } from './handlers/login.ts'
 import { getHealth, getIndex, getVersion } from './handlers/system.ts'
 
 export default async function apiRoutes(fastify: FastifyInstance) {
@@ -11,5 +11,4 @@ export default async function apiRoutes(fastify: FastifyInstance) {
 
     // token validation
     fastify.get('/token', getToken)
-    fastify.get('/token/btg', getTokenBTG)
 }
