@@ -17,15 +17,19 @@
 
 ---
 
-BeeKeeper is a monitoring API for Login, used by QueenBee. It exposes endpoints for service monitoring, traffic analysis, and user management.
+BeeKeeper is a token-validation API for Login, used by QueenBee. It validates Authentik access tokens and alerts on break-the-glass logins.
 
-## Features
+## Endpoints
 
-- **Service monitoring** with real-time status via SSE
-- **Traffic analysis** and request metrics
-- **Authentik integration** for user and group management
-- **Discord alerts** for critical service events
-- **Scheduled cron jobs** for data collection and maintenance
+| Method | Path            | Notes                                               |
+|--------|-----------------|-----------------------------------------------------|
+| `GET`  | `/api/`         | Lists the registered routes                         |
+| `GET`  | `/api/health`   | Liveness/readiness probe                            |
+| `GET`  | `/api/version`  | Version from `package.json`                         |
+| `GET`  | `/api/token`    | Validates a bearer token against Authentik          |
+| `GET`  | `/api/token/btg`| As above, plus a Discord alert on break-the-glass use|
+
+Token validation requires the caller to be in the `TekKom` or `queenbee` group.
 
 ## Getting Started
 
@@ -49,26 +53,14 @@ All variables go in the root `.env` file.
 
 | Name               | Default      | Notes                                              |
 |--------------------|--------------|----------------------------------------------------|
-| `DB`               | `beekeeper`  | Postgres database name                             |
-| `DB_HOST`          |              | Postgres host                                      |
-| `DB_USER`          | `beekeeper`  | Postgres username                                  |
-| `DB_PASSWORD`      |              | Postgres password                                  |
 | `BASE_URL`         |              | Base URL for your Authentik instance               |
-| `CLIENT_ID`        |              | OAuth2 client ID from Authentik                    |
-| `CLIENT_SECRET`    |              | OAuth2 client secret from Authentik                |
-| `REDIRECT_URI`     |              | OAuth2 redirect URI                                |
-| `BEEKEEPER_URL`    |              | Public URL of this BeeKeeper instance              |
-| `AUTHENTIK_TOKEN`  |              | Authentik API token for user management            |
-| `BTG_TOKEN`        |              | BTG integration token                              |
+| `BTG_TOKEN`        |              | Break-the-glass static token                       |
 | `WEBHOOK_URL`      |              | Discord webhook URL for alerts                     |
 | `CRITICAL_ROLE`    |              | Discord role ID to ping on critical alerts         |
-| `TRAFFIC_SECRET`   |              | Secret for traffic data ingestion                  |
 
 ## Project Structure
 
-- `api/src/handlers/` - HTTP handlers (monitoring, traffic, system, login)
+- `api/src/handlers/` - HTTP handlers (login, system)
 - `api/src/routes.ts` - Route registration
 - `api/src/constants.ts` - Configuration and environment variable loading
-- `api/src/db.ts` - Database client
-- `cron/` - Scheduled data collection jobs
-- `db/` - Database schema
+- `api/src/utils/auth.ts` - Authentik token validation and caching

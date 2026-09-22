@@ -1,15 +1,9 @@
 import cors from '@fastify/cors'
-import sse from '@fastify/sse'
 import Fastify from 'fastify'
 import fs from 'fs'
 import path from 'path'
-import config from '#constants'
 import apiRoutes from './routes.ts'
-import fp from './fp.ts'
 import { installJsonConsoleLogger, log } from './utils/logs/jsonLogger.ts'
-import monitor from './utils/status/monitor.ts'
-import run from '#db'
-import debug from './utils/debug.ts'
 
 import { getFavicon, getIndex as getIndexHandler } from './handlers/system.ts'
 
@@ -44,24 +38,7 @@ const fastify = Fastify({
 })
 
 fastify.decorate('favicon', fs.readFileSync(path.join(process.cwd(), 'public', 'favicon.ico')))
-fastify.decorate('domains', Buffer.from(JSON.stringify({ domains: [] })))
-fastify.decorate('metrics', Buffer.from(JSON.stringify({
-    total_requests: '0',
-    avg_request_time: 0,
-    error_rate: 0,
-    top_status_codes: [],
-    top_methods: [],
-    top_domains: [],
-    top_paths: [],
-    top_slow_paths: [],
-    top_error_paths: [],
-    top_os: [],
-    top_browsers: [],
-    requests_over_time: []
-})))
 
-fastify.register(sse)
-fastify.register(fp)
 fastify.register(apiRoutes, { prefix: '/api' })
 fastify.register(cors, {
     origin: true,
@@ -84,55 +61,4 @@ async function start() {
     }
 }
 
-setTimeout(() => {
-    checkMaxConnections()
-}, 5000)
-
-setInterval(async() => {
-    monitor()
-}, 60000)
-
 start()
-
-async function checkMaxConnections() {
-    try {
-        const result = await run('SELECT count(*) FROM pg_stat_activity WHERE state=\'active\';')
-        const active = Number(result.rows[0]?.count) || 0
-        const maxRes = await run('SHOW max_connections;')
-        const maxConnections = Number(maxRes.rows[0]?.max_connections) || 0
-        const threshold = Math.floor(maxConnections / 2)
-        const severeThreshold = (maxConnections / 10) * 9
-
-        if (active > threshold && config.WEBHOOK_URL) {
-            console.warn(`Active connections ${active} > ${threshold}, sending Discord alert...`)
-
-            const data: { content?: string; embeds: object[] } = {
-                embeds: [
-                    {
-                        title: '🐝 BeeKeeper Database Max Connections 🐝',
-                        description: `🐝 Many connections detected: ${active}/${threshold}.`,
-                        color: 0xff0000,
-                        timestamp: new Date().toISOString()
-                    }
-                ]
-            }
-
-            if (active > severeThreshold) {
-                data.content = `🚨 <@&${config.CRITICAL_ROLE}> 🚨`
-            }
-
-            const alertWebhook = new URL(config.WEBHOOK_URL)
-            alertWebhook.searchParams.set('thread_id', config.LOG_ALERTS_THREAD_ID)
-
-            await fetch(alertWebhook, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-        } else {
-            debug({ basic: `Active connections: ${active}` })
-        }
-    } catch (error) {
-        debug({ basic: `checkMaxConnections error: ${error}` })
-    }
-}
